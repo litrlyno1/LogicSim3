@@ -7,6 +7,7 @@ class BulbGate(LogicGate):
         self._value = False
     
     def getOutput(self):
+        self._value = self._getInputValues()[0]
         return (self._getInputValues()[0])
     
     def onChange(self):
