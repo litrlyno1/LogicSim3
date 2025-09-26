@@ -7,10 +7,6 @@ class LogicGate(Component):
         self._numInputs = numInputs
         self._inputConnections = [None]*numInputs
     
-    @abstractmethod
-    def _calculateOutput(self):
-        pass
-    
     def _getInputValues(self):
         inputValues = []
         for input in self._inputConnections:
