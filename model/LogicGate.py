@@ -10,7 +10,7 @@ class LogicGate(Component):
     def _getInputValues(self):
         inputValues = []
         for input in self._inputConnections:
-            if input == None:
+            if input is None:
                 inputValues.append(False)
             else:
                 inputValues.append(input.getOutput())
@@ -33,7 +33,9 @@ class LogicGate(Component):
         if (connectionIndex < 0) or (connectionIndex >= self._numInputs):
             raise IndexError(f"Connection index out of range. Index: {connectionIndex} not within interval [0, {self._numInputs-1}]")
 
-        self._inputConnections[connectionIndex].detach(self)
+        # observer is detached only if it existed before
+        if self._inputConnections is not None:
+            self._inputConnections[connectionIndex].detach(self)
         self._inputConnections[connectionIndex] = None
     
     def onChange(self):
