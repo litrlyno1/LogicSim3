@@ -7,10 +7,7 @@ class Switch(Component, IToggleable):
         super().__init__()
     
     def toggle(self):
-        if self._value == False:
-            self._value = True
-        else:
-            self._value = False
+        return not self._value
     
     def getOutput(self):
         return self._value
