@@ -4,3 +4,6 @@ from SwitchComponent import Switch
 switch1 = Switch()
 
 switch1.toggle()
+print(switch1.getOutput())
+switch1.toggle()
+print(switch1.getOutput())
