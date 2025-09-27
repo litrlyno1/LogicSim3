@@ -1,7 +1,7 @@
-from Component import Component
-from Interfaces import IToggleable
+from Interfaces import IToggleable, ISignalSource
+from Observer import Observer, IObservable
 
-class Switch(Component, IToggleable):
+class Switch(IObservable, IToggleable, ISignalSource):
     
     def __init__(self):
         super().__init__()

@@ -1,42 +1,25 @@
-from abc import abstractmethod
-from Component import Component
+from Pin import InputPin, OutputPin
+from Observer import Observer, IObservable
+from Interfaces import ISignalSource
+from __future__ import annotations
 
-class LogicGate(Component):
+class LogicGate(Observer, IObservable, ISignalSource):
     
-    def __init__(self, numInputs : int):
+    def __init__(self, numInputs : int, numOutputs : int = 1):
         self._numInputs = numInputs
-        self._inputConnections = [None]*numInputs
+        self._numOutputs = numOutputs
+        self._initPins_()
     
-    def _getInputValues(self):
-        inputValues = []
-        for input in self._inputConnections:
-            if input is None:
-                inputValues.append(False)
-            else:
-                inputValues.append(input.getOutput())
-        return inputValues
+    def __initPins__(self):
+        self.__initInputPins__()
+        self.__initOutputPins__()
     
-    def setInputConnection(self, component: Component, connectionIndex: int):
-        if (connectionIndex < 0) or (connectionIndex >= self._numInputs):
-            raise IndexError(f"Connection index out of range. Expected value within [0, {self._numInputs-1}], got {connectionIndex}")
-        
-        if component == None or not isinstance(component, Component):
-            raise TypeError(f"Connected object must be a component. Except got {type(component)}.")
-        
-        if component == self:
-            raise ValueError(f"Gate cannot be connected to itself")
-        
-        component.attach(self)
-        self._inputConnections[connectionIndex] = component
+    def __initOutputPins__(self):
+        self.outputPins = []
+        for _ in range(self._numOutputs):
+            self.outputPins.append(OutputPin(gate = self))
     
-    def deleteInputConnection(self, connectionIndex: int):
-        if (connectionIndex < 0) or (connectionIndex >= self._numInputs):
-            raise IndexError(f"Connection index out of range. Index: {connectionIndex} not within interval [0, {self._numInputs-1}]")
-
-        # observer is detached only if it existed before
-        if self._inputConnections is not None:
-            self._inputConnections[connectionIndex].detach(self)
-        self._inputConnections[connectionIndex] = None
-    
-    def onChange(self):
-        self.notify()
+    def __initInputPins__(self):
+        self.inputPins = []
+        for _ in range(self._numInputs):
+            self.inputPins.append(InputPin(gate = self, index = _))

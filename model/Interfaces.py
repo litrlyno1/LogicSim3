@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from Pin import Connection
 
 class IToggleable(ABC):
     
@@ -8,4 +9,20 @@ class IToggleable(ABC):
     
     @abstractmethod
     def toggle(self):
-        pass
+        ...
+
+class ISignalSource(ABC):
+    
+    @abstractmethod
+    def getOutput(self):
+        ...
+
+class IConnectable(ABC):
+    
+    @abstractmethod
+    def connect(self, connection : Connection):
+        ...
+    
+    @abstractmethod
+    def disconnect(self):
+        ...
