@@ -7,7 +7,7 @@ class Component(ABC):
         self._observers = []
     
     @abstractmethod
-    def getOutput(self):
+    def getOutput(self) -> bool:
         pass
     
     def attach(self, observer):
