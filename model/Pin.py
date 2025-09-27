@@ -27,9 +27,11 @@ class InputPin(Pin):
     def connect(self, connection : Connection):
         self._connection = connection
         self.attach(connection)
+        self.notify()
     
     def disconnect(self):
         self._connection.detach(self)
+        self.notify()
         self._connection = None
 
 class OutputPin(Pin):
@@ -45,9 +47,11 @@ class OutputPin(Pin):
     def connect(self, connection : Connection):
         self._connections.append(connection)
         connection.attach(self)
+        self.notify()
     
     def disconnect(self, connection : Connection):
         self.detach(connection)
+        connection.notify()
         self._connections.remove(connection)
 
 #connection is an additional layer for pins interacting with each other
