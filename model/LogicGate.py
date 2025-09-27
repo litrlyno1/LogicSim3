@@ -23,6 +23,9 @@ class LogicGate(Component):
         if component == None or not isinstance(component, Component):
             raise TypeError(f"Connected object must be a component. Except got {type(component)}.")
         
+        if component == self:
+            raise ValueError(f"Gate cannot be connected to itself")
+        
         component.attach(self)
         self._inputConnections[connectionIndex] = component
     
