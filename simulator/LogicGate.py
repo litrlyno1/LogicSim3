@@ -4,7 +4,6 @@ from Component import Component
 class LogicGate(Component):
     
     def __init__(self, numInputs : int):
-        super().__init__()
         self._numInputs = numInputs
         self._inputConnections = [None]*numInputs
     
@@ -25,17 +24,14 @@ class LogicGate(Component):
             raise TypeError(f"Connected object must be a component. Except got {type(component)}.")
         
         component.attach(self)
-        component.notify()
         self._inputConnections[connectionIndex] = component
     
     def deleteInputConnection(self, connectionIndex: int):
         if (connectionIndex < 0) or (connectionIndex >= self._numInputs):
             raise IndexError(f"Connection index out of range. Index: {connectionIndex} not within interval [0, {self._numInputs-1}]")
 
-        self._inputConnections[connectionIndex].notify()
         self._inputConnections[connectionIndex].detach(self)
         self._inputConnections[connectionIndex] = None
     
     def onChange(self):
-        print("change!")
         self.notify()

@@ -13,10 +13,12 @@ class Component(ABC):
     def attach(self, observer):
         if observer not in self._observers:
             self._observers.append(observer)
+        self.notify()
     
     def detach(self, observer):
         if observer in self._observers:
             self._observers.remove(observer)
+        self.notify()
     
     def notify(self):
         for observer in self._observers:
