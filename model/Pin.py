@@ -1,10 +1,9 @@
 from __future__ import annotations
-from LogicGate import LogicGate
 from Propagator import Propagator
 from Interfaces import ISignalSource, ISingleConnectable, IMultiConnectable
 
 class Pin(Propagator):
-    def __init__(self, gate: LogicGate):
+    def __init__(self, gate: "LogicGate"):
         super().__init__()
         self.gate = gate
 
@@ -14,10 +13,14 @@ class Pin(Propagator):
 class InputPin(Pin, ISingleConnectable):
     def __init__(self, gate, index):
         super().__init__(gate)
-        if  not (0 < index < gate._numInputs):
+        if not (0 <= index < gate._numInputs):
             raise IndexError("Wrong index when initializing ")
         self.index = index
         self.connection = None
+        self.type = "InputPin"
+    
+    def connection(self):
+        return self.connection
     
     def getOutput(self):
         if self.connection is not None and self.connection.getOutput() is None:
@@ -27,17 +30,24 @@ class InputPin(Pin, ISingleConnectable):
     def connect(self, conn : Connection):
         self.connection = conn
         self.connection.attach(self)
-        self.update()
+        #self.update()
     
     def disconnect(self, conn : Connection):
         self.connection = None
         self.connection.detach(self)
-        self.update()
+        #self.update()
 
 class OutputPin(Pin, IMultiConnectable):
-    def __init__(self, gate):
+    def __init__(self, gate, index : int):
         super().__init__(gate)
+        if not (0 <= index < gate._numOutputs):
+            raise IndexError("Wrong index when initializing ")
+        self.index = index
         self.connections: list[Connection] = []
+        self.type = "OutputPin"
+
+    def connections(self):
+        return self.connections
 
     def getOutput(self):
         if self.gate.getOutput() is None:
@@ -57,8 +67,10 @@ class OutputPin(Pin, IMultiConnectable):
 #connection is an additional layer for pins interacting with each other
 class Connection(Propagator, ISignalSource):
     def __init__(self, source = None, target = None):
+        super().__init__()
         self._source = source
         self._target = target
+        self.type = "Connection"
     
     def getOutput(self):
         return self._source.getOutput()
