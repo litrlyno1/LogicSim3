@@ -1,7 +1,7 @@
-from Interfaces import IToggleable, ISignalSource
+from Interfaces import IToggleable
 from LogicGate import LogicGate
 
-class Switch(LogicGate, IToggleable, ISignalSource):
+class Switch(LogicGate, IToggleable):
     
     def __init__(self):
         super().__init__(numInputs=0, numOutputs=1)
@@ -9,7 +9,7 @@ class Switch(LogicGate, IToggleable, ISignalSource):
     
     def toggle(self):
         self._value = not self._value
-        self.notifyChange()
+        self.update()
     
     def getOutput(self):
         return self._value

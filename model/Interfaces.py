@@ -1,28 +1,24 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from Pin import Connection
-from typing import Protocol
 
-class IToggleable(Protocol):
-    
-    def __init__(self):
-        super().__init__()
-    
+class IToggleable(ABC):
+
     @abstractmethod
-    def toggle(self):
+    def toggle(self) -> None:
         ...
 
-class ISignalSource(Protocol):
+class ISignalSource(ABC):
     
     @abstractmethod
-    def getOutput(self):
+    def getOutput(self) -> bool:
         ...
 
-class IConnectable(Protocol):
+class IConnectable(ABC):
     
     @abstractmethod
-    def connect(self, connection : Connection):
+    def connect(self, connection : Connection) -> None:
         ...
     
     @abstractmethod
-    def disconnect(self):
+    def disconnect(self) -> None:
         ...
