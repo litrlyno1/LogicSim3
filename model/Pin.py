@@ -1,16 +1,16 @@
+from __future__ import annotations
 from LogicGate import LogicGate
-from Observer import Observer, Observable
+from Propagator import Propagator
 from abc import abstractmethod
 from Interfaces import ISignalSource, IConnectable
-from __future__ import annotations
 
-class Pin(ISignalSource, IConnectable, Observer, Observable):
+class Pin(Propagator, IConnectable):
     def __init__(self, gate: LogicGate):
         super().__init__()
         self.gate = gate
     
-    def update(self):
-        self.notify()
+    def getOutput(self):
+        ...
 
 class InputPin(Pin):
     def __init__(self, gate, index):
@@ -37,29 +37,29 @@ class OutputPin(Pin):
 
 #connection is an additional layer for pins interacting with each other
 
-class Connection(ISignalSource, Observer, Observable):
+class Connection(Propagator, ISignalSource):
     def __init__(self, source = None, target = None):
         self._source = source
         self._target = target
     
     def getOutput(self):
-        return self._inputPin.getOutput()
+        return self._source.getOutput()
 
     def dispose(self):
-        self._inputPin.disconnect(self)
-        self._outputPin.disconnect()
+        self._source.disconnect(self)
+        self._target.disconnect()
 
-def ConnectionFactory():
+class ConnectionFactory:
     
     @classmethod 
-    def connect(pin1: Pin, pin2: Pin):
-        if isValidPair(pin1, pin2):
+    def connect(cls, pin1: Pin, pin2: Pin):
+        if cls.isValidPair(pin1, pin2):
             if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
                 sourcePin = pin2
                 targetPin = pin1
             elif isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
-                sourcePin = pin2
-                targetPin = pin1
+                sourcePin = pin1
+                targetPin = pin2
             
             conn = Connection(source = sourcePin, target = targetPin)
             sourcePin.connections.append(conn)

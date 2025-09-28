@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 class Observer(ABC):
     @abstractmethod
     def update(self) -> None:
         ...
 
-class Observable(ABC):
+class Observable():
     
     def __init__(self):
         self._observers: List[Observer] = []
@@ -21,8 +22,3 @@ class Observable(ABC):
     def notify(self):
         for observer in self._observers:
             observer.update()
-
-#propagator class is used to mark components, which can both receive and transmit a signal
-class Propagator(Observer, Observable):
-    def update(self):
-        self.notify()

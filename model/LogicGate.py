@@ -1,9 +1,8 @@
 from Pin import InputPin, OutputPin
-from Observer import Propagator
-from Interfaces import ISignalSource
+from Propagator import Propagator
 from __future__ import annotations
 
-class LogicGate(Propagator, ISignalSource):
+class LogicGate(Propagator):
     
     def __init__(self, numInputs : int, numOutputs : int = 1):
         super().__init__()

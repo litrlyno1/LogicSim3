@@ -15,10 +15,7 @@ class ISignalSource(ABC):
 
 class IConnectable(ABC):
     
+    @property
     @abstractmethod
-    def connect(self, connection : Connection) -> None:
-        ...
-    
-    @abstractmethod
-    def disconnect(self) -> None:
+    def connection(self) -> Connection:
         ...
