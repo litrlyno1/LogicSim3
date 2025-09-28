@@ -62,9 +62,9 @@ class OutputPin(Pin):
 #connection is an additional layer for pins interacting with each other
 
 class Connection(ISignalSource, Observer):
-    def __init__(self, inputPin = None, outputPin = None, propagator : SignalPropagator = None):
-        self._inputPin = inputPin
-        self._outputPin = outputPin
+    def __init__(self, source = None, target = None, propagator : SignalPropagator = None):
+        self._source = source
+        self._target = target
         self._propagator = propagator
     
     def getOutput(self):
@@ -78,10 +78,9 @@ class Connection(ISignalSource, Observer):
     def connect(cls, pin1: Pin, pin2: Pin):
         if cls.isValidPair(pin1, pin2):
             if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
-                conn = cls(inputPin = pin2, outputPin = pin1)
+                conn = cls(source = pin2, target = pin1)
             elif isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
-                conn = cls(inputPin = pin1, outputPin = pin2)
-            #roles are reversed for connections: inputPins in LogicGates are outputPins in connections and vice versa
+                conn = cls(source = pin1, target = pin2)
             
             pin1.connect(conn)
             pin2.connect(conn)

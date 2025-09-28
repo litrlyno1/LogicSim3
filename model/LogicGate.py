@@ -13,8 +13,8 @@ class LogicGate(Observer, ISignalSource):
         self._init_pins_()
     
     def _init_pins_(self):
-        self._initInputPins_()
-        self._initOutputPins_()
+        self._init_input_pins_()
+        self._init_output_pins_()
     
     def _init_output_pins_(self):
         self.outputPins = []
