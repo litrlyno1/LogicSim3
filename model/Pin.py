@@ -30,12 +30,12 @@ class InputPin(Pin, ISingleConnectable):
     def connect(self, conn : Connection):
         self.connection = conn
         self.connection.attach(self)
-        #self.update()
+        self.update()
     
     def disconnect(self, conn : Connection):
         self.connection = None
         self.connection.detach(self)
-        #self.update()
+        self.update()
 
 class OutputPin(Pin, IMultiConnectable):
     def __init__(self, gate, index : int):
