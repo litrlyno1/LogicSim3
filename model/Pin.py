@@ -1,14 +1,11 @@
 from __future__ import annotations
 from Propagator import Propagator
-from Interfaces import ISignalSource, ISingleConnectable, IMultiConnectable
+from Interfaces import ISingleConnectable, IMultiConnectable
 
 class Pin(Propagator):
     def __init__(self, gate: "LogicGate"):
         super().__init__()
         self.gate = gate
-
-    def getOutput(self):
-        ...
 
 class InputPin(Pin, ISingleConnectable):
     def __init__(self, gate, index):
@@ -16,25 +13,26 @@ class InputPin(Pin, ISingleConnectable):
         if not (0 <= index < gate._numInputs):
             raise IndexError("Wrong index when initializing ")
         self.index = index
-        self.connection = None
+        self._connection = None
         self.type = "InputPin"
     
+    @property
     def connection(self):
-        return self.connection
+        return self._connection
     
     def getOutput(self):
-        if self.connection is not None and self.connection.getOutput() is None:
+        if self._connection is not None and self._connection.getOutput() is None:
             raise ValueError("Input pin expected output from connection, got None instead")
-        return self.connection.getOutput() or False
+        return self._connection.getOutput() or False
 
     def connect(self, conn : Connection):
-        self.connection = conn
-        self.connection.attach(self)
+        self._connection = conn
+        self._connection.attach(self)
         self.update()
     
     def disconnect(self, conn : Connection):
-        self.connection = None
-        self.connection.detach(self)
+        self._connection = None
+        self._connection.detach(self)
         self.update()
 
 class OutputPin(Pin, IMultiConnectable):
@@ -43,11 +41,12 @@ class OutputPin(Pin, IMultiConnectable):
         if not (0 <= index < gate._numOutputs):
             raise IndexError("Wrong index when initializing ")
         self.index = index
-        self.connections: list[Connection] = []
+        self._connections: list[Connection] = []
         self.type = "OutputPin"
 
+    @property
     def connections(self):
-        return self.connections
+        return self._connections
 
     def getOutput(self):
         if self.gate.getOutput() is None:
@@ -55,17 +54,17 @@ class OutputPin(Pin, IMultiConnectable):
         return self.gate.getOutput()
     
     def connect(self, conn: Connection):
-        self.connections.append(conn)
+        self._connections.append(conn)
         self.attach(conn)
         self.update()
     
     def disconnect(self, conn: Connection):
-        self.connections.remove(conn)
+        self._connections.remove(conn)
         self.detach(conn)
         conn.update()
 
 #connection is an additional layer for pins interacting with each other
-class Connection(Propagator, ISignalSource):
+class Connection(Propagator):
     def __init__(self, source = None, target = None):
         super().__init__()
         self._source = source
