@@ -1,11 +1,10 @@
 from abc import abstractmethod
 from Pin import Connection
 from typing import Protocol
-from Observer import SignalPropagator
 
 class IToggleable(Protocol):
     
-    def __init__(self, propagator : SignalPropagator):
+    def __init__(self):
         super().__init__()
     
     @abstractmethod

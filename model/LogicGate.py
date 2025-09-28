@@ -1,15 +1,14 @@
 from Pin import InputPin, OutputPin
-from Observer import Observer, SignalPropagator
+from Observer import Observer
 from Interfaces import ISignalSource
 from __future__ import annotations
 
 class LogicGate(Observer, ISignalSource):
     
-    def __init__(self, numInputs : int, numOutputs : int = 1, propagator : SignalPropagator = None):
+    def __init__(self, numInputs : int, numOutputs : int = 1):
         super().__init__()
         self._numInputs = numInputs
         self._numOutputs = numOutputs
-        self._propagator = propagator
         self._init_pins_()
     
     def _init_pins_(self):
@@ -24,7 +23,7 @@ class LogicGate(Observer, ISignalSource):
     def _init_input_pins_(self):
         self.inputPins = []
         for _ in range(self._numInputs):
-            self.inputPins.append(InputPin(gate = self, index = _, propagator=self._propagator))
+            self.inputPins.append(InputPin(gate = self, index = _))
     
     def notifyChange(self):
         self._propagator.propagate()

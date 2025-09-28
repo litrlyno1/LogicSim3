@@ -1,24 +1,17 @@
 from LogicGate import LogicGate
-from Observer import Observer, SignalPropagator
+from Observer import Observer
 from abc import abstractmethod
 from Interfaces import ISignalSource, IConnectable
 from __future__ import annotations
 
 class Pin(ISignalSource, IConnectable, Observer):
-    def __init__(self, gate: LogicGate, propagator : SignalPropagator = None):
+    def __init__(self, gate: LogicGate):
         super().__init__()
         self.gate = gate
-        self._propagator = propagator
-    
-    def notifyChange(self):
-        self._propagator.propagate()
-    
-    def onChange(self):
-        self.notifyChange()
 
 class InputPin(Pin):
-    def __init__(self, gate, index, propagator : SignalPropagator):
-        super().__init__(gate, propagator)
+    def __init__(self, gate, index):
+        super().__init__(gate)
         if  not (0 < index < gate._numInputs):
             raise IndexError("Wrong index when initializing ")
         self.index = index
@@ -40,7 +33,7 @@ class InputPin(Pin):
         self._connection = None
 
 class OutputPin(Pin):
-    def __init__(self, gate, propagator : SignalPropagator = None):
+    def __init__(self, gate):
         super().__init__(gate, propagator)
         self._connections = []
 
@@ -62,7 +55,7 @@ class OutputPin(Pin):
 #connection is an additional layer for pins interacting with each other
 
 class Connection(ISignalSource, Observer):
-    def __init__(self, source = None, target = None, propagator : SignalPropagator = None):
+    def __init__(self, source = None, target = None):
         self._source = source
         self._target = target
         self._propagator = propagator
@@ -73,12 +66,6 @@ class Connection(ISignalSource, Observer):
     def dispose(self):
         self._inputPin.disconnect(self)
         self._outputPin.disconnect()
-    
-    def notifyChange(self):
-        self._propagator.propagate()
-    
-    def onChange(self):
-        self.notifyChange()
 
 def ConnectionFactory():
     
