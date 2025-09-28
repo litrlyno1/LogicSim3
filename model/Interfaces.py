@@ -13,9 +13,31 @@ class ISignalSource(ABC):
     def getOutput(self) -> bool:
         ...
 
+#defines relationship between Pin and Connection
 class IConnectable(ABC):
+
+    @abstractmethod
+    def connect(self, conn : Connection) -> None:
+        ...
+
+class ISingleConnectable(IConnectable):
     
     @property
     @abstractmethod
-    def connection(self) -> Connection:
+    def connection(self) -> Connection | None:
+        ...
+    
+    @abstractmethod
+    def disconnect(self) -> None:
+        ...
+
+class IMultiConnectable(IConnectable):
+    
+    @property
+    @abstractmethod
+    def connection(self) -> list[Connection]:
+        ...
+    
+    @abstractmethod
+    def disconnect(self, conn : Connection) -> None:
         ...

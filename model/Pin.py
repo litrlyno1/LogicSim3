@@ -1,18 +1,17 @@
 from __future__ import annotations
 from LogicGate import LogicGate
 from Propagator import Propagator
-from abc import abstractmethod
-from Interfaces import ISignalSource, IConnectable
+from Interfaces import ISignalSource, ISingleConnectable, IMultiConnectable
 
-class Pin(Propagator, IConnectable):
+class Pin(Propagator):
     def __init__(self, gate: LogicGate):
         super().__init__()
         self.gate = gate
-    
+
     def getOutput(self):
         ...
 
-class InputPin(Pin):
+class InputPin(Pin, ISingleConnectable):
     def __init__(self, gate, index):
         super().__init__(gate)
         if  not (0 < index < gate._numInputs):
@@ -25,18 +24,37 @@ class InputPin(Pin):
             raise ValueError("Input pin expected output from connection, got None instead")
         return self.connection.getOutput() or False
 
-class OutputPin(Pin):
+    def connect(self, conn : Connection):
+        self.connection = conn
+        self.connection.attach(self)
+        self.update()
+    
+    def disconnect(self, conn : Connection):
+        self.connection = None
+        self.connection.detach(self)
+        self.update()
+
+class OutputPin(Pin, IMultiConnectable):
     def __init__(self, gate):
         super().__init__(gate)
-        self.connections = []
+        self.connections: list[Connection] = []
 
     def getOutput(self):
         if self.gate.getOutput() is None:
             raise ValueError("Output pin expected output from gate, got None instead")
         return self.gate.getOutput()
+    
+    def connect(self, conn: Connection):
+        self.connections.append(conn)
+        self.attach(conn)
+        self.update()
+    
+    def disconnect(self, conn: Connection):
+        self.connections.remove(conn)
+        self.detach(conn)
+        conn.update()
 
 #connection is an additional layer for pins interacting with each other
-
 class Connection(Propagator, ISignalSource):
     def __init__(self, source = None, target = None):
         self._source = source
@@ -44,10 +62,6 @@ class Connection(Propagator, ISignalSource):
     
     def getOutput(self):
         return self._source.getOutput()
-
-    def dispose(self):
-        self._source.disconnect(self)
-        self._target.disconnect()
 
 class ConnectionFactory:
     
@@ -62,8 +76,8 @@ class ConnectionFactory:
                 targetPin = pin2
             
             conn = Connection(source = sourcePin, target = targetPin)
-            sourcePin.connections.append(conn)
-            targetPin.connection = conn
+            sourcePin.connect(conn)
+            targetPin.connect(conn)
             
             return conn
     
