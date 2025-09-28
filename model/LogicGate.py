@@ -1,28 +1,33 @@
 from Pin import InputPin, OutputPin
-from Observer import Observer, IObservable
+from Observer import Observer, SignalPropagator
 from Interfaces import ISignalSource
 from __future__ import annotations
 
-class LogicGate(Observer, IObservable, ISignalSource):
+class LogicGate(Observer, ISignalSource):
     
-    def __init__(self, numInputs : int, numOutputs : int = 1):
+    def __init__(self, numInputs : int, numOutputs : int = 1, propagator : SignalPropagator = None):
+        super().__init__()
         self._numInputs = numInputs
         self._numOutputs = numOutputs
-        self.__initPins__()
+        self._propagator = propagator
+        self._init_pins_()
     
-    def __initPins__(self):
-        self.__initInputPins__()
-        self.__initOutputPins__()
+    def _init_pins_(self):
+        self._initInputPins_()
+        self._initOutputPins_()
     
-    def __initOutputPins__(self):
+    def _init_output_pins_(self):
         self.outputPins = []
         for _ in range(self._numOutputs):
             self.outputPins.append(OutputPin(gate = self))
     
-    def __initInputPins__(self):
+    def _init_input_pins_(self):
         self.inputPins = []
         for _ in range(self._numInputs):
-            self.inputPins.append(InputPin(gate = self, index = _))
+            self.inputPins.append(InputPin(gate = self, index = _, propagator=self._propagator))
+    
+    def notifyChange(self):
+        self._propagator.propagate()
     
     def onChange(self):
-        self.notify()
+        self.notifyChange()

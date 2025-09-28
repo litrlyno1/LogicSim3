@@ -1,17 +1,15 @@
 from Interfaces import IToggleable, ISignalSource
-from Observer import Observer, IObservable
+from Observer import SignalPropagator
 
-class Switch(IObservable, IToggleable, ISignalSource):
+class Switch(IToggleable, ISignalSource):
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, propagator : SignalPropagator = None):
+        super().__init__(propagator)
+        self._value = False
     
     def toggle(self):
         self._value = not self._value
-        self.notify()
+        self.notifyChange()
     
     def getOutput(self):
         return self._value
-    
-    def onChange(self):
-        self.notify()

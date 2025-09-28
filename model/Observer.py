@@ -4,10 +4,16 @@ class Observer(Protocol):
     def onChange(self) -> None:
         ...
 
-class IObservable(Protocol):
-    def __init__(self):
-        self._observers: List[Observer] = []
-
+class SignalPropagator:
+    #singleton
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SignalPropagator, cls).__new__(cls)
+            cls._instance._observers: List[Observer] = []
+        return cls._instance
+    
     def attach(self, observer: Observer):
         if observer not in self._observers:
             self._observers.append(observer)
@@ -16,6 +22,7 @@ class IObservable(Protocol):
         if observer in self._observers:
             self._observers.remove(observer)
 
-    def notify(self):
-        for observer in self._observers:
+    def propagate(self):
+        # copy of observers list for consistency
+        for observer in list(self._observers):
             observer.onChange()

@@ -1,19 +1,24 @@
 from LogicGate import LogicGate
-from Observer import Observer, IObservable
+from Observer import Observer, SignalPropagator
 from abc import abstractmethod
 from Interfaces import ISignalSource, IConnectable
 from __future__ import annotations
 
-class Pin(ISignalSource, IConnectable, Observer, IObservable):
-    def __init__(self, gate: LogicGate):
+class Pin(ISignalSource, IConnectable, Observer):
+    def __init__(self, gate: LogicGate, propagator : SignalPropagator = None):
+        super().__init__()
         self.gate = gate
+        self._propagator = propagator
+    
+    def notifyChange(self):
+        self._propagator.propagate()
     
     def onChange(self):
-        self.notify()
+        self.notifyChange()
 
 class InputPin(Pin):
-    def __init__(self, gate, index):
-        super().__init__(gate)
+    def __init__(self, gate, index, propagator : SignalPropagator):
+        super().__init__(gate, propagator)
         if  not (0 < index < gate._numInputs):
             raise IndexError("Wrong index when initializing ")
         self.index = index
@@ -27,16 +32,16 @@ class InputPin(Pin):
     def connect(self, connection : Connection):
         self._connection = connection
         self.attach(connection)
-        self.notify()
+        self.notifyChange()
     
     def disconnect(self):
         self._connection.detach(self)
-        self.notify()
+        self.notifyChange()
         self._connection = None
 
 class OutputPin(Pin):
-    def __init__(self, gate):
-        super().__init__(gate)
+    def __init__(self, gate, propagator : SignalPropagator = None):
+        super().__init__(gate, propagator)
         self._connections = []
 
     def getOutput(self):
@@ -47,19 +52,20 @@ class OutputPin(Pin):
     def connect(self, connection : Connection):
         self._connections.append(connection)
         connection.attach(self)
-        self.notify()
+        self.notifyChange()
     
     def disconnect(self, connection : Connection):
         self.detach(connection)
-        connection.notify()
+        connection.notifyChange()
         self._connections.remove(connection)
 
 #connection is an additional layer for pins interacting with each other
 
-class Connection(ISignalSource, Observer, IObservable):
-    def __init__(self, inputPin = None, outputPin = None):
+class Connection(ISignalSource, Observer):
+    def __init__(self, inputPin = None, outputPin = None, propagator : SignalPropagator = None):
         self._inputPin = inputPin
         self._outputPin = outputPin
+        self._propagator = propagator
     
     def getOutput(self):
         return self._inputPin.getOutput()
@@ -88,5 +94,8 @@ class Connection(ISignalSource, Observer, IObservable):
         else:
             return False
     
+    def notifyChange(self):
+        self._propagator.propagate()
+    
     def onChange(self):
-        self.notify()
+        self.notifyChange()

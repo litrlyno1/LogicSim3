@@ -1,12 +1,12 @@
 from abc import abstractmethod
 from Pin import Connection
 from typing import Protocol
+from Observer import SignalPropagator
 
 class IToggleable(Protocol):
     
-    def __init__(self):
+    def __init__(self, propagator : SignalPropagator):
         super().__init__()
-        self._value = False
     
     @abstractmethod
     def toggle(self):
