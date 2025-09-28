@@ -34,3 +34,4 @@ class BulbGate(LogicGate):
     
     def onChange(self):
         self.getOutput()
+        self.notifyChange()

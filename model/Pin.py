@@ -74,13 +74,21 @@ class Connection(ISignalSource, Observer):
         self._inputPin.disconnect(self)
         self._outputPin.disconnect()
     
-    @classmethod
-    def connect(cls, pin1: Pin, pin2: Pin):
-        if cls.isValidPair(pin1, pin2):
+    def notifyChange(self):
+        self._propagator.propagate()
+    
+    def onChange(self):
+        self.notifyChange()
+
+def ConnectionFactory():
+    
+    @classmethod 
+    def connect(pin1: Pin, pin2: Pin):
+        if isValidPair(pin1, pin2):
             if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
-                conn = cls(source = pin2, target = pin1)
+                conn = Connection(source = pin2, target = pin1)
             elif isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
-                conn = cls(source = pin1, target = pin2)
+                conn = Connection(source = pin1, target = pin2)
             
             pin1.connect(conn)
             pin2.connect(conn)
@@ -88,13 +96,7 @@ class Connection(ISignalSource, Observer):
     
     @staticmethod
     def isValidPair(pin1: Pin, pin2: Pin) -> bool:
-        if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin) or isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
+        if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin) or isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
             return True
         else:
             return False
-    
-    def notifyChange(self):
-        self._propagator.propagate()
-    
-    def onChange(self):
-        self.notifyChange()
