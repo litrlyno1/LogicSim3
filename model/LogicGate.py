@@ -36,8 +36,7 @@ class LogicGate(Propagator):
         def createInputPins(self, num: int):
             self._inputPins = []
             for index in range(num):
-                pin = InputPin(gate=self._gate, index=index)
-                pin.attach(self._gate)
+                pin = InputPin(gate = self._gate, index=index)
                 self._inputPins.append(pin)
 
         @property
@@ -50,8 +49,8 @@ class LogicGate(Propagator):
         def createOutputPins(self, num: int):
             self._outputPins = []
             for index in range(num):
-                pin = OutputPin(gate=self._gate, index=index)
-                self._gate.attach(pin)  # Attach pin as observer to the gate
+                pin = OutputPin(gate = self._gate, index=index)
+                self._gate.attach(pin)
                 self._outputPins.append(pin)
 
         @property

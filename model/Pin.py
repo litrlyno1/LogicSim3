@@ -15,6 +15,7 @@ class InputPin(Pin, ISingleConnectable):
         self.index = index
         self._connection = None
         self.type = "InputPin"
+        self.attach(self.gate)
     
     @property
     def connection(self):
