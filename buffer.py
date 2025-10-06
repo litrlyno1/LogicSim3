@@ -201,7 +201,6 @@ class CircuitCanvasView(QGraphicsView):
             self._rubber_band = None
         self._connection_source_pin_id = None
 
-    # ---------------------- Lookup helpers ---------------------- #
     def _find_pin_item(self, pin_id: str) -> Optional[PinItem]:
         # naive linear search - optimize later if necessary
         for item in self._scene.items():
@@ -217,14 +216,12 @@ class CircuitCanvasView(QGraphicsView):
                 return it
         return None
 
-    # ---------------------- Grid snapping ---------------------- #
     def _snap_to_grid(self, scene_pos: QPointF) -> QPointF:
         gs = self._canvas_settings.GRID_SIZE
         x = round(scene_pos.x() / gs) * gs
         y = round(scene_pos.y() / gs) * gs
         return QPointF(x, y)
 
-    # ---------------------- Public API for view manipulation ---------------------- #
     def add_gate_visual(self, gate_type: str, scene_pos: QPointF) -> str:
         """Create a visual gate from code (not only via drag and drop).
         Returns gate_id so callers can reference the visual later.
