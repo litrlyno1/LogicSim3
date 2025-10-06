@@ -3,5 +3,5 @@ class CanvasSettings():
         ...
     
     @classmethod
-    def getDefault(cls):
+    def default(cls):
         ...

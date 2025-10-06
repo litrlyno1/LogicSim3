@@ -39,10 +39,7 @@ class CircuitCanvasView(QGraphicsView):
         # appearance
         self.setBackgroundBrush(QBrush(self._canvas_settings.BACKGROUND_COLOR))
 
-    # ---------------------- Grid drawing ---------------------- #
     def drawBackground(self, painter: QPainter, rect):
-        """Draw grid using CanvasSettings. This method centralizes any magic numbers used for
-        rendering the grid so configuration is easy."""
         super().drawBackground(painter, rect)
         left = int(rect.left()) - (int(rect.left()) % self._canvas_settings.GRID_SIZE)
         top = int(rect.top()) - (int(rect.top()) % self._canvas_settings.GRID_SIZE)
@@ -70,7 +67,6 @@ class CircuitCanvasView(QGraphicsView):
             painter.drawLine(rect.left(), y, rect.right(), y)
             y += major
 
-    # ---------------------- Zooming ---------------------- #
     def wheelEvent(self, event):
         # Zoom centered at mouse pointer. Scrolling changes scale according to settings.
         delta = event.angleDelta().y()
@@ -88,7 +84,6 @@ class CircuitCanvasView(QGraphicsView):
         self.resetTransform()
         self._current_scale = 1.0
 
-    # ---------------------- Panning ---------------------- #
     def mousePressEvent(self, event):
         if event.button() == Qt.MiddleButton:
             # start panning
