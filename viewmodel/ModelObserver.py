@@ -6,8 +6,5 @@ from model.Propagator import Propagator
 class ModelObserver(Observer):
     modelUpdated = Signal()
     
-    def __init__():
-        super().__init__()
-    
-    def update(self):
+    def update(self) -> None:
         self.modelUpdated.emit()

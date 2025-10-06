@@ -1,4 +1,4 @@
-class Canvas():
+class CanvasSettings():
     def __init__(self):
         ...
     

@@ -1,19 +1,26 @@
 from PySide6.QtCore import QObject, Signal, Slot, QPointF
+
 from model.Observer import Observer
 from model.LogicGate import LogicGate
 
-def LogicGateVM(QObject, Observer):
-    modelUpdated = Signal()
+from CanvasVM import CanvasVM
+from Selectable import Selectable
+from Deletable import Deletable
+from ModelObserver import ModelObserver
+
+def LogicGateVM(ModelObserver, Selectable, Deletable):
     posChanged = Signal()
-    selectedChanged = Signal(bool)
-    deleted = Signal()
     
-    def __init__(self, gate : LogicGate, pos: QPointF = QPointF(0,0), selected = True):
+    def __init__(self, canvas : CanvasVM, gate : LogicGate, pos: QPointF = QPointF(0,0), selected : bool = True):
+        super().__init__()
+        self._canvas = canvas
         self._gate = gate
         self._pos = pos
-        self._selected = selected
         
         self._gate.attach(self)
+    
+    def getCanvas(self) -> CanvasVM:
+        return self._canvas
     
     def getGate(self) -> LogicGate:
         return self._gate
@@ -23,23 +30,5 @@ def LogicGateVM(QObject, Observer):
     
     def setPos(self, pos : QPointF) -> None:
         self._pos = pos
-        self.posChanged.emit()
-    
-    def isSelected(self) -> bool:
-        return self._selected
-    
-    def select(self) -> None:
-        if self._selected == False:
-            self._selected = True
-            self.selectedChanged.emit()
-    
-    def unselect(self) -> None:
-        if self._selected == True:
-            self._selected = False
-            self.selectedChanged.emit()
-    
-    def delete(self) -> None:
-        self.deleted.emit()
-    
-    def update(self):
-        self.modelUpdated.emit()
+        self.posChanged.connect(self._canvas.onGatePosChanged)
+        self.posChanged.emit(self, pos)

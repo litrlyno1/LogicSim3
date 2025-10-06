@@ -1,15 +1,19 @@
 from PySide6.QtCore import Signal, QObject
-from model.Observer import Observer
-from model.Pin import Connection
 
-class ConnectionVM(QObject, Observer):
+from model.Pin import Connection
+from ModelObserver import ModelObserver
+from Deletable import Deletable
+from Selectable import Selectable
+
+class ConnectionVM(QObject):
     selectedChanged = Signal()
     deleted = Signal()
     
     def __init__(self, connection : Connection):
+        super().__init__()
         self._connection = connection
-    
-    
-    
-    def delete(self):
-        self.deleted.emit()
+        
+        self._connection.attach(self)
+
+    def getConnection(self):
+        return self._connection

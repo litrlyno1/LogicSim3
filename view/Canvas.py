@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QGraphicsView
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QPointF
 
-from view.settings.CanvasSettings import CanvasSettings
+from view.settings.Canvas import CanvasSettings
 
 class Canvas(QGraphicsView):
     
@@ -13,3 +13,7 @@ class Canvas(QGraphicsView):
         self.connectionPreview = Signal(QPointF)                  
         self.connectionCompleted = Signal(str, str)               
         self.itemMoved = Signal(str, QPointF)
+    
+    @classmethod
+    def createDefault(cls):
+        return cls(settings = )
