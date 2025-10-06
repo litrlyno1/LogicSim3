@@ -2,6 +2,7 @@ from Interfaces import IToggleable
 from LogicGate import LogicGate
 
 class Switch(LogicGate, IToggleable):
+    name = "Switch"
     
     def __init__(self):
         super().__init__(numInputs=0, numOutputs=1)

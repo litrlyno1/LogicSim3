@@ -14,4 +14,3 @@ class SideBar(QWidget):
         def addGateButton(self, gate : str):
             pass
     
-    def 

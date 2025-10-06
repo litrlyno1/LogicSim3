@@ -2,17 +2,25 @@ from __future__ import annotations
 from Pin import InputPin, OutputPin
 from Propagator import Propagator
 from typing import List
+from core.registry import registry
 
 class LogicGate(Propagator):
+    name = None
 
     def __init__(self, numInputs: int, numOutputs: int = 1):
         super().__init__()
-        self.type = "Gate"
         self._numInputs = numInputs
         self._numOutputs = numOutputs
         self._pins = self._PinManager(self)
         self._pins.createInputPins(numInputs)
         self._pins.createOutputPins(numOutputs)
+    
+    @classmethod
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        if cls.name is None:
+            raise ValueError(f"{cls.__name__} must define 'name'")
+        registry.register(cls.name, cls)
 
     def getInputPins(self) -> List[InputPin]:
         return self._pins.inputPins
@@ -25,6 +33,7 @@ class LogicGate(Propagator):
 
     def getOutputPin(self, index: int) -> OutputPin:
         return self._pins.getOutputPin(index)
+    
     
     #internal PinManager to not overcomplicate LogicGate
     class _PinManager:
