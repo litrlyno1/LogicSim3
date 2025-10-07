@@ -1,13 +1,13 @@
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
-from PySide6.QtCore import Signal, QPointF, Qt
-from PySide6.QtGui import QWheelEvent, QMouseEvent, QPainter, QPen, QColor, QBrush
-
+from PySide6.QtGui import QPainter, QPen, QBrush, QDropEvent, QDragEnterEvent
+from PySide6.QtCore import Signal, QPointF
 from view.settings.Canvas import CanvasSettings
 
 class Canvas(QGraphicsView):
+    itemDropped = Signal(str, QPointF) 
     
     def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default()):
-        super().__init__()
+        super().__init__(parent)
         self._scene = QGraphicsScene(self)
         self._sceneRect = settings.SCENE_RECT
         self._scene.setSceneRect(self._sceneRect)
@@ -20,13 +20,16 @@ class Canvas(QGraphicsView):
         self._gridDarkColor = settings.GRID_COLOR
         self._gridSize = settings.GRID_SIZE
         self._gridMajorFactor = settings.GRID_MAJOR_FACTOR
-        self.setScene(self._scene)
 
+        self.setScene(self._scene)
+        self._scene.installEventFilter(self)
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.setMouseTracking(True)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setInteractive(True)
+        self.setAcceptDrops(True)
+        self.viewport().setAcceptDrops(True)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setBackgroundBrush(QBrush(self._backgroundColor))
@@ -78,6 +81,23 @@ class Canvas(QGraphicsView):
         self._zoom = newZoom
         event.accept()
 
-    def reset_zoom(self):
+    def resetZoom(self):
         self.resetTransform()
         self._zoom = 1.0
+    
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasText():
+            event.acceptProposedAction()
+    
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasText():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event: QDropEvent):
+        if event.mimeData().hasText():
+            gate_type = event.mimeData().text()
+            pos = self.mapToScene(event.position().toPoint())
+            self.itemDropped.emit(gate_type, pos)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
