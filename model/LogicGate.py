@@ -14,8 +14,7 @@ class LogicGate(Propagator):
         self._pins = self._PinManager(self)
         self._pins.createInputPins(numInputs)
         self._pins.createOutputPins(numOutputs)
-    
-    @classmethod
+
     def __init_subclass__(cls):
         super().__init_subclass__()
         if cls.name is None:
