@@ -1,12 +1,13 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSizePolicy, QLabel
 from PySide6.QtGui import QDrag, QPixmap, QPainter
 from PySide6.QtCore import Qt, QMimeData
-from typing import List 
+from typing import List
 
+from core.registry import GateRegistry
 
 class SideBar(QWidget):
     
-    def __init__(self,  parent=None, gateTypes: list[str] = ("AndGate", "OrGate", "NotGate")):
+    def __init__(self,  parent=None, gateTypes: list[str] = GateRegistry.getAllGates()):
         super().__init__(parent)
         self.gateTypes = gateTypes
         self._setupUi()

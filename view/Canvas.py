@@ -95,7 +95,7 @@ class Canvas(QGraphicsView):
 
     def dropEvent(self, event: QDropEvent):
         if event.mimeData().hasText():
-            print(f"Dropped {event.mimeData().text()}")
+            print(f"Dropped {event.mimeData().text()} at {event.position()}")
             gate_type = event.mimeData().text()
             pos = self.mapToScene(event.position().toPoint())
             self.itemDropped.emit(gate_type, pos)

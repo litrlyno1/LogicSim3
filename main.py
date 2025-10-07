@@ -9,8 +9,6 @@ def main():
     window = MainWindow()
 
     window.show()
-    reg = GateRegistry()
-    print(reg.getAllGates())
     sys.exit(app.exec())
 
 if __name__ == "__main__":

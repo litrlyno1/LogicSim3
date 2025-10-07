@@ -25,8 +25,6 @@ class LogicGate(Propagator):
     def getOutputPin(self, index: int) -> OutputPin:
         return self._pins.getOutputPin(index)
     
-    
-    #internal PinManager to not overcomplicate LogicGate
     class _PinManager:
         def __init__(self, gate: "LogicGate"):
             self._gate = gate

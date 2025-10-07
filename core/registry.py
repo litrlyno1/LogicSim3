@@ -2,23 +2,20 @@ import inspect
 import importlib
 
 class GateRegistry:
-    def __init__(self, module_path: str = "model.Gates"):
-        self.module_path = module_path
-        self.registry = {}
-        self._loadGates()
+    _registry = None
 
-    def _loadGates(self):
-        gates_module = importlib.import_module(self.module_path)
-        for name, obj in inspect.getmembers(gates_module, inspect.isclass):
-            self.registry[name] = obj
+    @classmethod
+    def _loadGates(cls, module_path="model.Gates"):
+        if cls._registry is None:
+            import importlib, inspect
+            gates_module = importlib.import_module(module_path)
+            cls._registry = {
+                name: obj
+                for name, obj in vars(gates_module).items()
+                if inspect.isclass(obj) and name != "LogicGate"
+            }
+        return cls._registry
 
-    def getClass(self, name: str):
-        return self.registry.get(name)
-
-    def getAllGates(self) -> list:
-        return list(self.registry.keys())
-
-    def reload(self):
-        self.registry.clear()
-        self._loadGates()
-
+    @classmethod
+    def getAllGates(cls):
+        return list(cls._loadGates().keys())

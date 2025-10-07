@@ -6,7 +6,7 @@ class AndGate(LogicGate):
         super().__init__(numInputs = 2)
     
     def getOutput(self):
-        return (self.inputPins[0].getOutput() and self.inputPins[1].getOutput())
+        return (self.getInputPin(0).getOutput() and self.getInputPin(1).getOutput())
 
 class OrGate(LogicGate):
     
@@ -14,7 +14,15 @@ class OrGate(LogicGate):
         super().__init__(numInputs = 2)
     
     def getOutput(self):
-        return (self.inputPins[0].getOutput() or self.inputPins[1].getOutput())
+        return (self.getInputPin(0).getOutput() or self.getInputPin(1).getOutput())
+
+class XorGate(LogicGate):
+    
+    def __init__(self, numInputs, numOutputs = 1):
+        super().__init__(numInputs = 2)
+    
+    def getOutput(self):
+        return (self.getInputPin(0).getOutput() ^ self.getInputPin(1).getOutput())
 
 class NotGate(LogicGate):
     
@@ -22,7 +30,7 @@ class NotGate(LogicGate):
         super().__init__(numInputs = 1)
     
     def getOutput(self):
-        return not self.inputPins[0].getOutput()
+        return not self.getInputPin(0).getOutput()
 
 class BulbGate(LogicGate):
     
