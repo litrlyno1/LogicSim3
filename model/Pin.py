@@ -1,6 +1,6 @@
 from __future__ import annotations
-from Propagator import Propagator
-from Interfaces import ISingleConnectable, IMultiConnectable
+from model.Propagator import Propagator
+from model.Interfaces import ISingleConnectable, IMultiConnectable
 
 class Pin(Propagator):
     def __init__(self, gate: "LogicGate"):

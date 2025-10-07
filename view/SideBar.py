@@ -3,8 +3,6 @@ from PySide6.QtGui import QDrag, QPixmap, QPainter
 from PySide6.QtCore import Qt, QMimeData
 from typing import List 
 
-from core.registry import registry
-
 
 class SideBar(QWidget):
     
