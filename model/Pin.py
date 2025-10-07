@@ -1,11 +1,12 @@
 from __future__ import annotations
 from model.Propagator import Propagator
 from model.Interfaces import ISingleConnectable, IMultiConnectable
+import weakref
 
 class Pin(Propagator):
     def __init__(self, gate: "LogicGate"):
         super().__init__()
-        self.gate = gate
+        self.gate = weakref.ref(gate)
 
 class InputPin(Pin, ISingleConnectable):
     def __init__(self, gate, index):
@@ -31,7 +32,7 @@ class InputPin(Pin, ISingleConnectable):
         self._connection.attach(self)
         self.update()
     
-    def disconnect(self, conn : Connection):
+    def disconnect(self):
         self._connection = None
         self._connection.detach(self)
         self.update()
@@ -66,19 +67,17 @@ class OutputPin(Pin, IMultiConnectable):
 
 #connection is an additional layer for pins interacting with each other
 class Connection(Propagator):
-    def __init__(self, source = None, target = None):
+    def __init__(self, source : Pin = None, target : Pin = None):
         super().__init__()
-        self._source = source
-        self._target = target
+        self._source = weakref.ref(source)
+        self._target = weakref.ref(target)
         self.type = "Connection"
     
     def getOutput(self):
         return self._source.getOutput()
-
-class ConnectionFactory:
     
     @classmethod 
-    def connect(cls, pin1: Pin, pin2: Pin):
+    def create(cls, pin1: Pin, pin2: Pin):
         if cls.isValidPair(pin1, pin2):
             if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
                 sourcePin = pin2

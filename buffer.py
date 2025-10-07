@@ -12,7 +12,6 @@ class CircuitCanvasView(QGraphicsView):
         self._canvas_settings = CanvasSettings()
 
         self._scene = QGraphicsScene(self)
-        # attach self reference to scene to allow GateItem -> scene -> canvas callbacks
         self._scene._canvas_view = self
         self.setScene(self._scene)
 

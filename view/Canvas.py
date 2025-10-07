@@ -2,12 +2,17 @@ from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PySide6.QtGui import QPainter, QPen, QBrush, QDropEvent, QDragEnterEvent
 from PySide6.QtCore import Signal, QPointF
 from view.settings.Canvas import CanvasSettings
+from viewmodel.CanvasVM import CanvasVM
+from viewmodel.commands.base import CommandManager
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF) 
     
-    def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default()):
+    def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default(), 
+                canvas : CanvasVM = CanvasVM(), commandManager : CommandManager = CommandManager()):
         super().__init__(parent)
+        self._canvasVM = canvas
+        self._commandManager = commandManager
         self._scene = QGraphicsScene(self)
         self._sceneRect = settings.SCENE_RECT
         self._scene.setSceneRect(self._sceneRect)
