@@ -4,9 +4,6 @@ from PySide6.QtCore import Signal, QPointF
 
 from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
-from viewmodel.CanvasVM import CanvasVM
-from viewmodel.commands.base import CommandManager
-from viewmodel.commands.AddGate import AddGate
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF) 

@@ -1,0 +1,67 @@
+from PySide6.QtCore import QPointF
+
+from viewmodel.command.base import Command
+from viewmodel.CanvasVM import CanvasVM
+from viewmodel.LogicGateVM import LogicGateVM
+
+class AddGate(Command):
+    def __init__(self, canvasVM : CanvasVM, gateType : str, pos : QPointF):
+        super().__init__()
+        print(f"Gate type: {gateType}")
+        print(f"pos: {pos}")
+        self._canvas = canvasVM
+        self._gate = LogicGateVM.create(gateType, pos)
+        self._pos = pos
+    
+    def getGate(self):
+        return self._gate
+    
+    def getCanvas(self):
+        return self._canvas
+    
+    def execute(self):
+        self._canvas.addGate(self._gate)
+    
+    def undo(self):
+        self._canvas.removeGate(self._gate)
+
+class MoveGate(Command):
+    def __init__(self, canvasVM : CanvasVM, gate : LogicGateVM, oldPos : QPointF, newPos : QPointF):
+        super().__init__()
+        self._canvas = canvasVM
+        self._gate = gate
+        self._oldPos = oldPos
+        self._newPos = newPos
+    
+    def getGate(self):
+        return self._gate
+    
+    def getOldPos(self):
+        return self._oldPos
+    
+    def getNewPos(self):
+        return self._newPos
+    
+    def execute(self):
+        self._gate.setPos(self._newPos)
+    
+    def undo(self):
+        self._gate.setPos(self._oldPos)
+
+class RemoveGate(Command):
+    def __init__(self, canvasVM : CanvasVM, gate : LogicGateVM):
+        super().__init__()
+        self._canvas = canvasVM
+        self._gate = gate
+    
+    def getGate(self):
+        return self._gate
+    
+    def getCanvas(self):
+        return self._canvas
+    
+    def execute(self):
+        self._canvas.removeGate(self._gate)
+    
+    def undo(self):
+        self._canvas.addGate(self._gate)

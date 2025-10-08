@@ -13,7 +13,7 @@ class EventBus:
             if not self._listeners[eventName]:
                 del self._listeners[eventName]
 
-    def emit(self, eventName, *args, **kwargs):
+    def emit(self, eventName, **kwargs):
         print(locals())
         for handler in self._listeners.get(eventName, []):
-            handler(*args, **kwargs)
+            handler(**kwargs)

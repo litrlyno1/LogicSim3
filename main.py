@@ -1,12 +1,18 @@
 import sys
 from PySide6.QtWidgets import QApplication
 from view.MainWindow import MainWindow
+from viewmodel.command.CommandManager import CommandManager
+from viewmodel.EventHandler import EventHandler
+from viewmodel.CanvasVM import CanvasVM
 
 from core.registry import GateRegistry
 
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
+
+    canvasVM = CanvasVM()
+    eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager= CommandManager(canvasVM = canvasVM))
     
     window.show()
     sys.exit(app.exec())

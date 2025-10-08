@@ -12,11 +12,13 @@ class LogicGateVM(QObject, Selectable, Deletable):
     posChanged = Signal()
     modelUpdated = Signal()
     
-    def __init__(self, gate : LogicGate, pos: QPointF = QPointF(0,0), selected : bool = False, parent = None):
-        super().__init__(parent = parent)
-        self._parent = parent
+    def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
+        super().__init__()
+        self._gate = GateRegistry.getGate(gateType)()
         self._pos = pos
-        self._modelObserver = ModelObserver(self, gate)
+        self._modelObserver = ModelObserver(self, self._gate)
+        print("Gate Initialized: ")
+        #print(self.__dict__)
     
     def getGate(self) -> LogicGate:
         return self._gate
@@ -33,6 +35,5 @@ class LogicGateVM(QObject, Selectable, Deletable):
         self.modelUpdated.emit(self)
     
     @classmethod
-    def create(cls, name : str, pos : QPointF, parent = None):
-        print(name)
-        return cls(parent, GateRegistry.getGate(name)(), pos, parent)
+    def create(cls, gateType : str, pos : QPointF):
+        return(cls(gateType, pos))

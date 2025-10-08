@@ -1,14 +1,15 @@
-from PySide6.QtCore import Signal, Slot, QObject, QPointF
+from PySide6.QtCore import Signal, QObject, QPointF
 from typing import List
 
 from viewmodel.LogicGateVM import LogicGateVM
 
 class CanvasVM(QObject):
-    gateAdded = Signal(LogicGateVM, QPointF)
+    gateAdded = Signal(LogicGateVM)
     gateRemoved = Signal(LogicGateVM)
     gateMoved = Signal(LogicGateVM)
     
     def __init__(self):
+        super().__init__()
         self._gates: List[LogicGateVM] = []
     
     def getGates(self) -> List[LogicGateVM]:
@@ -21,6 +22,8 @@ class CanvasVM(QObject):
     def addGate(self, gate : LogicGateVM) -> None:
         self._gates.append(gate)
         self.gateAdded.emit(gate)
+        print("CanvasVM: Gate added:")
+        print(gate.__dict__)
     
     def onGatePosChanged(self, gate : LogicGateVM, pos : QPointF) -> None:
         self.gateMoved.emit(gate, pos)

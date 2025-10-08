@@ -30,3 +30,6 @@ class MainWindow(QMainWindow):
     def addSideBar(self, sideBar : SideBar = None):
         self._sideBar = SideBar(parent = self) or sideBar
         self._layout.addWidget(self._sideBar)
+    
+    def getCanvas(self) -> Canvas:
+        return self._canvas
