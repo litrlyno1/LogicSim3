@@ -19,3 +19,8 @@ class GateRegistry:
     @classmethod
     def getAllGates(cls):
         return list(cls._loadGates().keys())
+    
+    @classmethod
+    def getGate(cls, name : str):
+        registry = cls._loadGates()
+        return registry[name]

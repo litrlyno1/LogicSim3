@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
 
 class Deletable:
     deleted = Signal()

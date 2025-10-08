@@ -6,7 +6,7 @@ class Observer(ABC):
     def update(self) -> None:
         ...
 
-class Observable():
+class Observable:
     
     def __init__(self):
         self._observers: List[Observer] = []

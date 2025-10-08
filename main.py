@@ -7,7 +7,7 @@ from core.registry import GateRegistry
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
-
+    
     window.show()
     sys.exit(app.exec())
 

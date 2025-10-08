@@ -12,7 +12,6 @@ class ConnectionVM(QObject):
     def __init__(self, connection : Connection):
         super().__init__()
         self._connection = connection
-        
         self._connection.attach(self)
 
     def getConnection(self):

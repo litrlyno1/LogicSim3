@@ -1,10 +1,13 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
 
 from model.Observer import Observer
-from model.Propagator import Propagator
+from model.LogicGate import LogicGate
 
 class ModelObserver(Observer):
-    modelUpdated = Signal()
+    def __init__(self, parent : QObject, gate : LogicGate):
+        self._parent = parent
+        self._gate = gate
+        self._gate.attach(observer = self)
     
     def update(self) -> None:
-        self.modelUpdated.emit()
+        self._parent.onModelUpdate()

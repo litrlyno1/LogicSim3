@@ -1,21 +1,26 @@
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PySide6.QtGui import QPainter, QPen, QBrush, QDropEvent, QDragEnterEvent
 from PySide6.QtCore import Signal, QPointF
+
+from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
 from viewmodel.CanvasVM import CanvasVM
 from viewmodel.commands.base import CommandManager
+from viewmodel.commands.AddGate import AddGate
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF) 
     
-    def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default(), 
-                canvas : CanvasVM = CanvasVM(), commandManager : CommandManager = CommandManager()):
+    def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
-        self._canvasVM = canvas
-        self._commandManager = commandManager
-        self._scene = QGraphicsScene(self)
+        self._createEventBus()
+        self._connectEventBus()
+        self._importSettings(settings)
+        self._setupGraphics()
+        self.update()
+    
+    def _importSettings(self, settings: CanvasSettings = CanvasSettings.default()) -> None:
         self._sceneRect = settings.SCENE_RECT
-        self._scene.setSceneRect(self._sceneRect)
         self._zoom = settings.ZOOM
         self._zoomMin = settings.ZOOM_MIN
         self._zoomMax = settings.ZOOM_MAX
@@ -25,7 +30,16 @@ class Canvas(QGraphicsView):
         self._gridDarkColor = settings.GRID_COLOR
         self._gridSize = settings.GRID_SIZE
         self._gridMajorFactor = settings.GRID_MAJOR_FACTOR
-
+    
+    def _createEventBus(self) -> None:
+        self._eventBus = EventBus()
+    
+    def _connectEventBus(self) -> None:
+        self.itemDropped.connect(lambda gateType, pos: self._eventBus.emit(eventName = "ItemDropped", gateType = gateType, pos = pos))
+    
+    def _setupGraphics(self) -> None:
+        self._scene = QGraphicsScene(self)
+        self._scene.setSceneRect(self._sceneRect)
         self.setScene(self._scene)
         self._scene.installEventFilter(self)
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
@@ -38,12 +52,9 @@ class Canvas(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setBackgroundBrush(QBrush(self._backgroundColor))
-
-        self.update()
-        
-    def importSettings(self, settings: CanvasSettings):
-        pass
-        #todo
+    
+    def getEventBus(self) -> EventBus:
+        return self._eventBus
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)
@@ -100,9 +111,9 @@ class Canvas(QGraphicsView):
 
     def dropEvent(self, event: QDropEvent):
         if event.mimeData().hasText():
-            print(f"Dropped {event.mimeData().text()} at {event.position()}")
             gate_type = event.mimeData().text()
             pos = self.mapToScene(event.position().toPoint())
+            print(f"Dropped {gate_type} at {pos}")
             self.itemDropped.emit(gate_type, pos)
             event.acceptProposedAction()
         else:
