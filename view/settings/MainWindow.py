@@ -3,9 +3,9 @@ from PySide6.QtCore import QSize
 
 from typing import Tuple
 
-class MainWindowSettings():
+class MainWindowSettings:
 
-    class LayoutSettings():
+    class LayoutSettings:
         def __init__(self,
                      type : QLayout,
                      contentsMargins : Tuple[int, int, int, int],

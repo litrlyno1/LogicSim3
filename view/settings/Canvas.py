@@ -1,7 +1,7 @@
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QRect
 
-class CanvasSettings():
+class CanvasSettings:
     def __init__(self,
                 sceneRect : QRect,
                 zoom: float,

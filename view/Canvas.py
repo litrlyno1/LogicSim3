@@ -1,19 +1,24 @@
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PySide6.QtGui import QPainter, QPen, QBrush, QDropEvent, QDragEnterEvent
-from PySide6.QtCore import Signal, QPointF
+from PySide6.QtCore import Signal, QPointF, Slot
 
 from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
+from view.GateItem import GateItem
+
+from viewmodel.CanvasVM import CanvasVM
+from viewmodel.LogicGateVM import LogicGateVM
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF) 
     
-    def __init__(self, parent = None, settings : CanvasSettings = CanvasSettings.default()):
+    def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
         self._createEventBus()
         self._connectEventBus()
         self._importSettings(settings)
         self._setupGraphics()
+        self.connectCanvasVM(canvasVM) #this connection serves an input-only purpose: canvas (view) visually reacts to changes in the VM
         self.update()
     
     def _importSettings(self, settings: CanvasSettings = CanvasSettings.default()) -> None:
@@ -52,6 +57,20 @@ class Canvas(QGraphicsView):
     
     def getEventBus(self) -> EventBus:
         return self._eventBus
+
+    def connectCanvasVM(self, canvasVM: CanvasVM):
+        self._canvasVM = canvasVM
+        if self._canvasVM is not None:
+            self._canvasVM.gateAdded.connect(self.addGateItem)
+    
+    @Slot(LogicGateVM)
+    def addGateItem(self, logicGateVM):
+        print("Placing GateItem: ")
+        logicGateVM = GateItem(logicGateVM)
+        self._scene.addItem(logicGateVM)
+        print("Scene rect:", self._scene.sceneRect() if self._scene else "No scene")
+        print("Item pos:", logicGateVM.getPos())
+
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)

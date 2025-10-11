@@ -22,8 +22,8 @@ class CanvasVM(QObject):
     def addGate(self, gate : LogicGateVM) -> None:
         self._gates.append(gate)
         self.gateAdded.emit(gate)
-        print("CanvasVM: Gate added:")
-        print(gate.__dict__)
+        #print("CanvasVM: Gate added:")
+        #print(gate.__dict__)
     
     def onGatePosChanged(self, gate : LogicGateVM, pos : QPointF) -> None:
         self.gateMoved.emit(gate, pos)

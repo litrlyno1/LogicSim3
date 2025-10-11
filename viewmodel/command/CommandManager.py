@@ -6,10 +6,13 @@ from viewmodel.CanvasVM import CanvasVM
 class CommandManager:
     
     def __init__(self, canvasVM : CanvasVM):
+        self.connectCanvasVM(canvasVM)
         self._executedStack = [] #stack of executed commands
         self._undoneStack = [] #stack of undone commands
-        self._canvasVM = canvasVM
         print("Command Manager initialized")
+    
+    def connectCanvasVM(self, canvasVM : CanvasVM):
+        self._canvasVM = canvasVM
     
     def do(self, command: Command):
         command.execute()

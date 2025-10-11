@@ -9,10 +9,13 @@ from core.registry import GateRegistry
 
 def main():
     app = QApplication(sys.argv)
-    window = MainWindow()
-
     canvasVM = CanvasVM()
-    eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager= CommandManager(canvasVM = canvasVM))
+    
+    window = MainWindow()
+    canvas = window.getCanvas()
+    canvas.connectCanvasVM(canvasVM=canvasVM)
+    commandManager = CommandManager(canvasVM = canvasVM)
+    eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager= commandManager)
     
     window.show()
     sys.exit(app.exec())

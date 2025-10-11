@@ -14,11 +14,15 @@ class LogicGateVM(QObject, Selectable, Deletable):
     
     def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
         super().__init__()
-        self._gate = GateRegistry.getGate(gateType)()
+        self._gateType = gateType
+        self._gate = GateRegistry.getGate(self._gateType)()
         self._pos = pos
         self._modelObserver = ModelObserver(self, self._gate)
         print("Gate Initialized: ")
         #print(self.__dict__)
+    
+    def getGateType(self) -> str:
+        return self._gateType
     
     def getGate(self) -> LogicGate:
         return self._gate
