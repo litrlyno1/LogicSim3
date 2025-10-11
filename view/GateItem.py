@@ -1,57 +1,47 @@
-from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtWidgets import QGraphicsRectItem
 from PySide6.QtGui import QPainter, QPen, QFont
 from PySide6.QtCore import QRectF, Qt
 from viewmodel.LogicGateVM import LogicGateVM
 from view.settings.GateItem import GateItemSettings
 
 
-class GateItem(QGraphicsItem):
+class GateItem(QGraphicsRectItem):
     
     def __init__(self, logicGateVM: LogicGateVM, settings: GateItemSettings = GateItemSettings.default()):
-        super().__init__()
         self._logicGateVM = logicGateVM
         self._importSettings(settings)
+        super().__init__(self._boundingRect)  # initialize rect item with bounding rect
+
         self.setPos(self._logicGateVM.getPos())
         self.setFlags(
-            QGraphicsItem.ItemIsMovable |
-            QGraphicsItem.ItemIsSelectable |
-            QGraphicsItem.ItemSendsGeometryChanges
+            QGraphicsRectItem.ItemIsMovable |
+            QGraphicsRectItem.ItemIsSelectable |
+            QGraphicsRectItem.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
         self.setZValue(10)
 
     def _importSettings(self, settings: GateItemSettings):
-        self._size = settings.SIZE
+        size = settings.SIZE
         self._boundingRect = QRectF(
-            -self._size.width() / 2,
-            -self._size.height() / 2,
-            self._size.width(),
-            self._size.height()
+            -size.width() / 2,
+            -size.height() / 2,
+            size.width(),
+            size.height()
         )
-        self._fontSize = settings.FONT_SIZE
-        self._textColor = settings.TEXT_COLOR
-        self._color = settings.COLOR
-        self._borderColor = settings.BORDER_COLOR
-        self._borderWidth = settings.BORDER_WIDTH
-        self._pen = QPen(self._borderColor, self._borderWidth)
-        self._textPen = QPen(self._textColor)
         self._font = QFont()
-        self._font.setPointSize(self._fontSize)
-
-    def getPos(self):
-        return self._logicGateVM.getPos()
-
-    def boundingRect(self) -> QRectF:
-        return self._boundingRect
+        self._font.setPointSize(settings.FONT_SIZE)
+        self._pen = QPen(settings.BORDER_COLOR, settings.BORDER_WIDTH)
+        self._textPen = QPen(settings.TEXT_COLOR)
+        self._color = settings.COLOR
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
         painter.setBrush(self._color)
         painter.setPen(self._pen)
-        painter.drawRect(self._boundingRect)
+        painter.drawRect(self.rect())
 
         painter.setFont(self._font)
         painter.setPen(self._textPen)
         gate_type = self._logicGateVM.getGateType()
-        print(f"Gate Item type: {gate_type}")
-        painter.drawText(self._boundingRect, Qt.AlignCenter, gate_type)
+        painter.drawText(self.rect(), Qt.AlignCenter, gate_type)
