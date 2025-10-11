@@ -15,7 +15,7 @@ def main():
     canvas = window.getCanvas()
     canvas.connectCanvasVM(canvasVM=canvasVM)
     commandManager = CommandManager(canvasVM = canvasVM)
-    eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager= commandManager)
+    eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager = commandManager)
     
     window.show()
     sys.exit(app.exec())

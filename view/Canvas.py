@@ -10,7 +10,8 @@ from viewmodel.CanvasVM import CanvasVM
 from viewmodel.LogicGateVM import LogicGateVM
 
 class Canvas(QGraphicsView):
-    itemDropped = Signal(str, QPointF) 
+    itemDropped = Signal(str, QPointF)
+    itemMoved = Signal(LogicGateVM, QPointF)
     
     def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
@@ -20,6 +21,8 @@ class Canvas(QGraphicsView):
         self._setupGraphics()
         self.connectCanvasVM(canvasVM) #this connection serves an input-only purpose: canvas (view) visually reacts to changes in the VM
         self.update()
+        
+        self._lastGateMoved = None
     
     def _importSettings(self, settings: CanvasSettings = CanvasSettings.default()) -> None:
         self._sceneRect = settings.SCENE_RECT
@@ -38,6 +41,7 @@ class Canvas(QGraphicsView):
     
     def _connectEventBus(self) -> None:
         self.itemDropped.connect(lambda gateType, pos: self._eventBus.emit(eventName = "ItemDropped", gateType = gateType, pos = pos))
+        self.itemMoved.connect(lambda gate, pos: self._eventBus.emit(eventName = "ItemMoved", gate = gate, pos = pos))
     
     def _setupGraphics(self) -> None:
         self._scene = QGraphicsScene(self)
@@ -62,15 +66,25 @@ class Canvas(QGraphicsView):
         self._canvasVM = canvasVM
         if self._canvasVM is not None:
             self._canvasVM.gateAdded.connect(self.addGateItem)
+            self._canvasVM.gateMoved.connect(self.gateMovedUpdate)
     
     @Slot(LogicGateVM)
     def addGateItem(self, logicGateVM):
         print("Placing GateItem: ")
         logicGateVM = GateItem(logicGateVM)
         self._scene.addItem(logicGateVM)
-        print("Scene rect:", self._scene.sceneRect() if self._scene else "No scene")
-        print("Item pos:", logicGateVM.getPos())
-
+        logicGateVM.signals.moved.connect(self.gateMoved)
+    
+    @Slot(GateItem, QPointF)
+    def gateMoved(self, gateItem, pos):
+        print("Canvas got signal : gate moved")
+        self._lastGateMoved = gateItem
+        self.itemMoved.emit(gateItem.getLogicGateVM(), pos)
+    
+    @Slot(GateItem, QPointF)
+    def gateMovedUpdate(self, gate, pos):
+        print("canvas got answer from canvasVM")
+        self._lastGateMoved.setPos(pos)
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)
@@ -127,10 +141,10 @@ class Canvas(QGraphicsView):
 
     def dropEvent(self, event: QDropEvent):
         if event.mimeData().hasText():
-            gate_type = event.mimeData().text()
+            gateType = event.mimeData().text()
             pos = self.mapToScene(event.position().toPoint())
-            print(f"Dropped {gate_type} at {pos}")
-            self.itemDropped.emit(gate_type, pos)
+            print(f"Dropped {gateType} at {pos}")
+            self.itemDropped.emit(gateType, pos)
             event.acceptProposedAction()
         else:
             event.ignore()

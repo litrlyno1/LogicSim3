@@ -9,7 +9,7 @@ from viewmodel.Deletable import Deletable
 from viewmodel.ModelObserver import ModelObserver
 
 class LogicGateVM(QObject, Selectable, Deletable):
-    posChanged = Signal()
+    posChanged = Signal(object, QPointF)
     modelUpdated = Signal()
     
     def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
@@ -32,7 +32,6 @@ class LogicGateVM(QObject, Selectable, Deletable):
     
     def setPos(self, pos : QPointF) -> None:
         self._pos = pos
-        self.posChanged.connect(self._canvas.onGatePosChanged)
         self.posChanged.emit(self, pos)
     
     def onModelUpdate(self):
