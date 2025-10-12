@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PySide6.QtGui import QPainter, QPen, QBrush, QDropEvent, QDragEnterEvent
-from PySide6.QtCore import Signal, QPointF, Slot
+from PySide6.QtCore import Signal, QPointF, Slot, Qt
 
 from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
@@ -130,6 +130,19 @@ class Canvas(QGraphicsView):
     def resetZoom(self):
         self.resetTransform()
         self._zoom = 1.0
+    
+    def mousePressEvent(self, event):
+        scenePos = self.mapToScene(event.pos())
+        item = self._scene.itemAt(scenePos, self.transform())
+        if not event.modifiers() & Qt.ShiftModifier: #if shift is not pressed
+            self.unselectAllItems(exceptionItem= item)
+            print("Unselected all")
+        super().mousePressEvent(event)
+    
+    def unselectAllItems(self, exceptionItem = None):
+        for item in self._scene.items():
+            if item is not exceptionItem:
+                item.unselect()
     
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():

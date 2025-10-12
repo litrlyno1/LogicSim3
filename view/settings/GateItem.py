@@ -8,6 +8,7 @@ class GateItemSettings:
                 fontSize,
                 textColor,
                 color,
+                selectedColor,
                 borderColor,
                 borderWidth):
         
@@ -15,6 +16,7 @@ class GateItemSettings:
         self.FONT_SIZE = fontSize
         self.TEXT_COLOR = textColor
         self.COLOR = color
+        self.SELECTED_COLOR = selectedColor
         self.BORDER_COLOR = borderColor
         self.BORDER_WIDTH = borderWidth
     
@@ -24,6 +26,7 @@ class GateItemSettings:
         fontSize = 10
         textColor = QColor(0,0,0)
         color = QColor(245, 245, 245)
+        selectedColor = QColor(170, 225, 255, 200)
         borderColor = QColor(50, 50, 50)
         borderWidth = 1.2
-        return cls(size, fontSize, textColor, color, borderColor, borderWidth)
+        return cls(size, fontSize, textColor, color, selectedColor, borderColor, borderWidth)

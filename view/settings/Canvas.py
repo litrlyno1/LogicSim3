@@ -31,9 +31,9 @@ class CanvasSettings:
         zoomMin = 0.5
         zoomMax = 20.0
         zoomStep = 1.1
-        backgroundColor = QColor("#BABABA")
-        gridColor = QColor("#575757")
-        gridDarkColor = QColor("#3B3B3B")
+        backgroundColor = QColor("#D4D4D4")
+        gridColor = QColor("#646464")
+        gridDarkColor = QColor("#2A2A2A")
         gridSize = 10
         gridMajorFactor = 5
         return cls(sceneRect, zoom, zoomMin, zoomMax, zoomStep, backgroundColor, gridColor, gridDarkColor, gridSize, gridMajorFactor)

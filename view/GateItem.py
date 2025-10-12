@@ -24,6 +24,7 @@ class GateItem(QGraphicsRectItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(10)
         
+        self._selected = True
         self._dragStartPos = None  #for movement tracking
 
     def _importSettings(self, settings: GateItemSettings):
@@ -39,14 +40,17 @@ class GateItem(QGraphicsRectItem):
         self._pen = QPen(settings.BORDER_COLOR, settings.BORDER_WIDTH)
         self._textPen = QPen(settings.TEXT_COLOR)
         self._color = settings.COLOR
+        self._selectedColor = settings.SELECTED_COLOR
+        print(f"SELECTED COLOR: {self._selectedColor.getRgb()}")
     
     def getLogicGateVM(self):
         return self._logicGateVM
 
     #view logic to track movement of the object (not just clicking)
     def mousePressEvent(self, event):
+        print("GateItem clicked")
         self._dragStartPos = self.pos()
-        super().mousePressEvent(event)
+        self.toggleSelected()
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
@@ -54,10 +58,25 @@ class GateItem(QGraphicsRectItem):
             self.signals.moved.emit(self, self.pos())
         self._dragStartPos = None
     ###
+    
+    def toggleSelected(self):
+        self._selected = not self._selected
+        self.update()
+    
+    def select(self):
+        self._selected = True
+        self.update()
+    
+    def unselect(self):
+        self._selected = False
+        self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
-        painter.setBrush(self._color)
+        if self._selected:
+            painter.setBrush(self._selectedColor)
+        else:
+            painter.setBrush(self._color)
         painter.setPen(self._pen)
         painter.drawRect(self.rect())
 
