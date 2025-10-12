@@ -11,7 +11,7 @@ from viewmodel.LogicGateVM import LogicGateVM
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF)
-    itemMoved = Signal(str, QPointF)
+    itemMoved = Signal(LogicGateVM, QPointF)
     
     def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
