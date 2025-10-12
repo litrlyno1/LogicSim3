@@ -12,6 +12,12 @@ class LogicGate(Propagator):
         self._pins = self._PinManager(self)
         self._pins.createInputPins(numInputs)
         self._pins.createOutputPins(numOutputs)
+    
+    def getNumInputs(self) -> int:
+        return self._numInputs
+
+    def getNumOutputs(self) -> int:
+        return self._numOutputs
 
     def getInputPins(self) -> List[InputPin]:
         return self._pins.inputPins

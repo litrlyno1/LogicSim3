@@ -3,6 +3,7 @@ from PySide6.QtGui import QPainter, QPen, QFont
 from PySide6.QtCore import QRectF, Qt, QPointF, Signal, QObject
 from viewmodel.LogicGateVM import LogicGateVM
 from view.settings.GateItem import GateItemSettings
+from view.PinItem import PinItem
 
 class GateItemSignals(QObject):
     moved = Signal(object, QPointF)
@@ -14,6 +15,7 @@ class GateItem(QGraphicsRectItem):
         self._importSettings(settings)
         self.signals = GateItemSignals()
         super().__init__(self._boundingRect)
+        self.initPinItems()
 
         self.setPos(self._logicGateVM.getPos())
         self.setFlags(
@@ -22,9 +24,10 @@ class GateItem(QGraphicsRectItem):
             QGraphicsRectItem.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
-        self.setZValue(10)
+        self.setZValue(1)
         
-        self._selected = True
+        self._selected = False
+        self.select()
         self._dragStartPos = None  #for movement tracking
 
     def _importSettings(self, settings: GateItemSettings):
@@ -43,6 +46,28 @@ class GateItem(QGraphicsRectItem):
         self._selectedColor = settings.SELECTED_COLOR
         print(f"SELECTED COLOR: {self._selectedColor.getRgb()}")
     
+    def getHeight(self):
+        return self._boundingRect.height()
+
+    def getWidth(self):
+        return self._boundingRect.width()
+    
+    def initPinItems(self):
+        self.initInputPins()
+        self.initOutputPins()
+    
+    def initInputPins(self):
+        self._inputPins = []
+        print(f"Number of input pins: {self._logicGateVM.getGate().getNumInputs()}")
+        for index in range(self._logicGateVM.getGate().getNumInputs()):
+            self._inputPins.append(PinItem(parentGate=self, type = "input", index = index))
+        
+    def initOutputPins(self):
+        self._outputPins = []
+        print(f"Number of output pins: {self._logicGateVM.getGate().getNumOutputs()}")
+        for index in range(self._logicGateVM.getGate().getNumOutputs()):
+            self._inputPins.append(PinItem(parentGate=self, type = "output", index = index))
+    
     def getLogicGateVM(self):
         return self._logicGateVM
 
@@ -60,16 +85,32 @@ class GateItem(QGraphicsRectItem):
     ###
     
     def toggleSelected(self):
-        self._selected = not self._selected
-        self.update()
+        if self._selected:
+            self.unselect()
+        else:
+            self.select()
     
     def select(self):
         self._selected = True
+        self._selectPinItems()
         self.update()
     
     def unselect(self):
         self._selected = False
+        self._unselectPinItems()
         self.update()
+    
+    def _selectPinItems(self):
+        for pin in self._inputPins:
+            pin.select()
+        for pin in self._outputPins:
+            pin.select()
+    
+    def _unselectPinItems(self):
+        for pin in self._inputPins:
+            pin.unselect()
+        for pin in self._outputPins:
+            pin.unselect()
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
