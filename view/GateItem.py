@@ -44,7 +44,6 @@ class GateItem(QGraphicsRectItem):
         self._textPen = QPen(settings.TEXT_COLOR)
         self._color = settings.COLOR
         self._selectedColor = settings.SELECTED_COLOR
-        print(f"SELECTED COLOR: {self._selectedColor.getRgb()}")
     
     def getHeight(self):
         return self._boundingRect.height()
@@ -71,7 +70,7 @@ class GateItem(QGraphicsRectItem):
     def getLogicGateVM(self):
         return self._logicGateVM
 
-    #view logic to track movement of the object (not just clicking)
+    #view logic to track movement of the object (also dragging)
     def mousePressEvent(self, event):
         print("GateItem clicked")
         self._dragStartPos = self.pos()

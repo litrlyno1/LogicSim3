@@ -25,6 +25,7 @@ class SideBarSettings:
                     padding: 6px;
                     border-radius: 6px;
                     background-color: #e0e0e0;
+                    color: black;
                 }
                 QPushButton:hover {
                     background-color: #cfd8dc;
