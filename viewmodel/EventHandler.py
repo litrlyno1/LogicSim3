@@ -10,4 +10,4 @@ class EventHandler:
         self._eventBus.subscribe(eventName= "ItemDropped", 
                                 handler = lambda gateType, pos: self._commandManager.createCommand(commandType="AddGate", gateType = gateType, pos = pos))
         self._eventBus.subscribe(eventName = "ItemMoved",
-                                handler = lambda gate, pos: self._commandManager.createCommand(commandType = "MoveGate", gate = gate, oldPos = gate.getPos(), newPos = pos))
+                                handler = lambda gate, pos: self._commandManager.createCommand(commandType = "MoveGate", gate = gate.getLogicGateVM(), oldPos = gate.getLogicGateVM().getPos(), newPos = pos))

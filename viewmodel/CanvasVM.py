@@ -6,7 +6,7 @@ from viewmodel.LogicGateVM import LogicGateVM
 class CanvasVM(QObject):
     gateAdded = Signal(LogicGateVM)
     gateRemoved = Signal(LogicGateVM)
-    gateMoved = Signal(LogicGateVM, QPointF)
+    gatePosUpdated = Signal(str, QPointF)
     
     def __init__(self):
         super().__init__()
@@ -26,6 +26,8 @@ class CanvasVM(QObject):
         #print("CanvasVM: Gate added:")
         #print(gate.__dict__)
     
-    @Slot(LogicGateVM, QPointF)
-    def gatePosChanged(self, gate : LogicGateVM, pos : QPointF) -> None:
-        self.gateMoved.emit(gate, pos)
+    @Slot(str, QPointF)
+    def gatePosChanged(self, id : str, pos : QPointF) -> None:
+        print("CRASH")
+        print(f"id = {id}, pos = {pos}")
+        self.gatePosUpdated.emit(id, pos)

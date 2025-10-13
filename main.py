@@ -14,6 +14,7 @@ def main():
     window = MainWindow()
     canvas = window.getCanvas()
     canvas.connectCanvasVM(canvasVM=canvasVM)
+
     commandManager = CommandManager(canvasVM = canvasVM)
     eventHandler = EventHandler(eventBus= window.getCanvas().getEventBus(), commandManager = commandManager)
     

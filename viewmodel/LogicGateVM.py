@@ -3,23 +3,28 @@ from PySide6.QtCore import QObject, Signal, Slot, QPointF
 from model.Observer import Observer
 from model.LogicGate import LogicGate
 from core.registry import GateRegistry
+from core.idGenerator import generateId
 
 from viewmodel.Selectable import Selectable
 from viewmodel.Deletable import Deletable
 from viewmodel.ModelObserver import ModelObserver
 
 class LogicGateVM(QObject, Selectable, Deletable):
-    posChanged = Signal(object, QPointF)
+    posChanged = Signal(str, QPointF)
     modelUpdated = Signal()
     
     def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
         super().__init__()
         self._gateType = gateType
         self._gate = GateRegistry.getGate(self._gateType)()
+        self._id = generateId(prefix = self._gateType)
         self._pos = pos
         self._modelObserver = ModelObserver(self, self._gate)
         print("Gate Initialized: ")
         #print(self.__dict__)
+    
+    def getId(self):
+        return self._id
     
     def getGateType(self) -> str:
         return self._gateType
@@ -32,7 +37,7 @@ class LogicGateVM(QObject, Selectable, Deletable):
     
     def setPos(self, pos : QPointF) -> None:
         self._pos = pos
-        self.posChanged.emit(self, pos)
+        self.posChanged.emit(self._id, pos)
     
     def onModelUpdate(self):
         self.modelUpdated.emit(self)

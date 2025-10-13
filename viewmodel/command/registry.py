@@ -2,18 +2,16 @@ import inspect
 import importlib
 
 class CommandRegistry:
-    _registry = None
+    _registry = {}
 
     @classmethod
-    def _loadCommands(cls, module_path="viewmodel.command.Commands"):
-        if cls._registry is None:
-            import importlib, inspect
-            gates_module = importlib.import_module(module_path)
-            cls._registry = {
-                name: obj
-                for name, obj in vars(gates_module).items()
-                if inspect.isclass(obj) and name != "Command"
-            }
+    def _loadCommands(cls, module_name = "viewmodel.command.Commands"):
+        if not cls._registry:
+            module = importlib.import_module(module_name)
+            for name, obj in inspect.getmembers(module, inspect.isclass):
+                if obj.__module__ == module_name:
+                    cls._registry[name] = obj
+        print(f"COMMAND REGISTRY: {cls._registry}")
         return cls._registry
 
     @classmethod
@@ -21,6 +19,5 @@ class CommandRegistry:
         return list(cls._loadCommands().keys())
     
     @classmethod
-    def getCommand(cls, name : str):
-        registry = cls._loadCommands()
-        return registry[name]
+    def getCommand(cls, name: str):
+        return cls._loadCommands()[name]

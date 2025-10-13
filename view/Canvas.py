@@ -11,7 +11,7 @@ from viewmodel.LogicGateVM import LogicGateVM
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF)
-    itemMoved = Signal(LogicGateVM, QPointF)
+    itemMoved = Signal(GateItem, QPointF)
     
     def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
@@ -19,6 +19,7 @@ class Canvas(QGraphicsView):
         self._connectEventBus()
         self._importSettings(settings)
         self._setupGraphics()
+        self._gateRegistry: dict[str, GateItem] = {}
         self.connectCanvasVM(canvasVM) #this connection serves an input-only purpose: canvas (view) visually reacts to changes in the VM
         self.update()
         
@@ -66,25 +67,26 @@ class Canvas(QGraphicsView):
         self._canvasVM = canvasVM
         if self._canvasVM is not None:
             self._canvasVM.gateAdded.connect(self.addGateItem)
-            self._canvasVM.gateMoved.connect(self.gateMovedUpdate)
+            self._canvasVM.gatePosUpdated.connect(self.gateMovedUpdate)
     
     @Slot(LogicGateVM)
     def addGateItem(self, logicGateVM):
         print("Placing GateItem: ")
-        logicGateVM = GateItem(logicGateVM)
-        self._scene.addItem(logicGateVM)
-        logicGateVM.signals.moved.connect(self.gateMoved)
+        item = GateItem(logicGateVM)
+        self._gateRegistry[logicGateVM.getId()] = item 
+        self._scene.addItem(item)
+        item.signals.moved.connect(self.gateMoved)
     
     @Slot(GateItem, QPointF)
     def gateMoved(self, gateItem, pos):
         print("Canvas got signal : gate moved")
-        self._lastGateMoved = gateItem
-        self.itemMoved.emit(gateItem.getLogicGateVM(), pos)
+        print("Registry (canvas view): ")
+        print(self._gateRegistry)
+        self.itemMoved.emit(gateItem, pos)
     
-    @Slot(GateItem, QPointF)
-    def gateMovedUpdate(self, gate, pos):
-        print("canvas got answer from canvasVM")
-        self._lastGateMoved.setPos(pos)
+    @Slot(str, QPointF)
+    def gateMovedUpdate(self, id, pos):
+        self._gateRegistry[id].setPos(pos)
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)
