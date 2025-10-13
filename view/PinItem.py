@@ -13,7 +13,7 @@ class PinItem(QGraphicsEllipseItem):
         super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2, parentGate)
         
         self._setupGraphics()
-        self._selected = True
+        self.setSelected(False)
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
@@ -24,21 +24,19 @@ class PinItem(QGraphicsEllipseItem):
     
     def _setupGraphics(self):
         self.setPos(QPointF(self._getRelX(), self._getRelY()))
-        print(self.pos().y())
+        #print(self.pos().y())
         self.setBrush(self._color)
         self.setPen(QPen(self._borderColor, self._borderWidth))
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
-    def select(self):
-        self._selected = True
-        self.setBrush(self._selectedColor)
-        self.update()
-    
-    def unselect(self):
-        self._selected = False
-        self.setBrush(self._color)
+    def setSelected(self, selected : bool):
+        super().setSelected(selected)
+        if selected:
+            self.setBrush(self._selectedColor)
+        else:
+            self.setBrush(self._color)
         self.update()
     
     def _getRelX(self):

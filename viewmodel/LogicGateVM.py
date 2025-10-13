@@ -20,7 +20,6 @@ class LogicGateVM(QObject, Selectable, Deletable):
         self._id = generateId(prefix = self._gateType)
         self._pos = pos
         self._modelObserver = ModelObserver(self, self._gate)
-        print("Gate Initialized: ")
         #print(self.__dict__)
     
     def getId(self):

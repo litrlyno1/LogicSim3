@@ -28,6 +28,4 @@ class CanvasVM(QObject):
     
     @Slot(str, QPointF)
     def gatePosChanged(self, id : str, pos : QPointF) -> None:
-        print("CRASH")
-        print(f"id = {id}, pos = {pos}")
         self.gatePosUpdated.emit(id, pos)

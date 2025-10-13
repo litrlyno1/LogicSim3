@@ -73,6 +73,7 @@ class Canvas(QGraphicsView):
     def addGateItem(self, logicGateVM):
         print("Placing GateItem: ")
         item = GateItem(logicGateVM)
+        print(f"Gate Item added with id {logicGateVM.getId()}")
         self._gateRegistry[logicGateVM.getId()] = item 
         self._scene.addItem(item)
         item.signals.moved.connect(self.gateMoved)
@@ -86,6 +87,7 @@ class Canvas(QGraphicsView):
     
     @Slot(str, QPointF)
     def gateMovedUpdate(self, id, pos):
+        print(f"Moving gate with id {id}")
         self._gateRegistry[id].setPos(pos)
     
     def drawBackground(self, painter: QPainter, rect):
@@ -136,15 +138,20 @@ class Canvas(QGraphicsView):
     def mousePressEvent(self, event):
         scenePos = self.mapToScene(event.pos())
         item = self._scene.itemAt(scenePos, self.transform())
-        if not event.modifiers() & Qt.ShiftModifier: #if shift is not pressed
-            self.unselectAllItems(exceptionItem= item)
-            print("Unselected all")
+        print(item)
+        if not event.modifiers() & Qt.ShiftModifier: 
+            if isinstance(item, GateItem):
+                self.unselectAllItems(exceptionItems = [item] + item.getInputPins() + item.getOutputPins())
+            else:
+                self.unselectAllItems()
+            #print("Unselected all")
         super().mousePressEvent(event)
     
-    def unselectAllItems(self, exceptionItem = None):
+    def unselectAllItems(self, exceptionItems = None):
         for item in self._scene.items():
-            if item is not exceptionItem:
-                item.unselect()
+            if item not in exceptionItems:
+                print("unselecting this one")
+                item.setSelected(False)
     
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():

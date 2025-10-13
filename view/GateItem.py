@@ -20,14 +20,12 @@ class GateItem(QGraphicsRectItem):
         self.setPos(self._logicGateVM.getPos())
         self.setFlags(
             QGraphicsRectItem.ItemIsMovable |
-            QGraphicsRectItem.ItemIsSelectable |
             QGraphicsRectItem.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
         
-        self._selected = False
-        self.select()
+        self.setSelected(False)
         self._dragStartPos = None  #for movement tracking
 
     def _importSettings(self, settings: GateItemSettings):
@@ -57,63 +55,59 @@ class GateItem(QGraphicsRectItem):
     
     def initInputPins(self):
         self._inputPins = []
-        print(f"Number of input pins: {self._logicGateVM.getGate().getNumInputs()}")
+        #print(f"Number of input pins: {self._logicGateVM.getGate().getNumInputs()}")
         for index in range(self._logicGateVM.getGate().getNumInputs()):
             self._inputPins.append(PinItem(parentGate=self, type = "input", index = index))
         
     def initOutputPins(self):
         self._outputPins = []
-        print(f"Number of output pins: {self._logicGateVM.getGate().getNumOutputs()}")
+        #print(f"Number of output pins: {self._logicGateVM.getGate().getNumOutputs()}")
         for index in range(self._logicGateVM.getGate().getNumOutputs()):
             self._inputPins.append(PinItem(parentGate=self, type = "output", index = index))
+    
+    def getInputPins(self):
+        return self._inputPins
+    
+    def getOutputPins(self):
+        return self._outputPins
     
     def getLogicGateVM(self):
         return self._logicGateVM
 
-    #view logic to track movement of the object (also dragging)
     def mousePressEvent(self, event):
-        print("GateItem clicked")
         self._dragStartPos = self.pos()
+        super().mousePressEvent(event)
         self.toggleSelected()
 
     def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
         if self._dragStartPos and self.pos() != self._dragStartPos:
             self.signals.moved.emit(self, self.pos())
         self._dragStartPos = None
-    ###
+        super().mouseReleaseEvent(event)
+    
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionHasChanged:
+            self.setSelected(True)
+            self.update()
+        return super().itemChange(change, value)
+
+    def setSelected(self, selected : bool):
+        self.setFlag(QGraphicsItem.ItemIsSelectable, selected)
+        for pin in self._inputPins:
+            pin.setSelected(selected)
+        for pin in self._outputPins:
+            pin.setSelected(selected)
+        self.update()
     
     def toggleSelected(self):
-        if self._selected:
-            self.unselect()
+        if self.isSelected():
+            self.setSelected(False)
         else:
-            self.select()
-    
-    def select(self):
-        self._selected = True
-        self._selectPinItems()
-        self.update()
-    
-    def unselect(self):
-        self._selected = False
-        self._unselectPinItems()
-        self.update()
-    
-    def _selectPinItems(self):
-        for pin in self._inputPins:
-            pin.select()
-        for pin in self._outputPins:
-            pin.select()
-    
-    def _unselectPinItems(self):
-        for pin in self._inputPins:
-            pin.unselect()
-        for pin in self._outputPins:
-            pin.unselect()
+            self.setSelected(True)
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
-        if self._selected:
+        if self.isSelected():
             painter.setBrush(self._selectedColor)
         else:
             painter.setBrush(self._color)

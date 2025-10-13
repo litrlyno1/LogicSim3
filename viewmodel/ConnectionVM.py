@@ -16,3 +16,7 @@ class ConnectionVM(QObject):
 
     def getConnection(self):
         return self._connection
+
+    @classmethod
+    def create(cls, gateType : str, pos : QPointF):
+        return(cls(gateType, pos))
