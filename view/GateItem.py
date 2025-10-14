@@ -19,7 +19,7 @@ class GateItem(QGraphicsRectItem):
 
         self.setPos(self._logicGateVM.getPos())
         self.setFlags(
-            QGraphicsRectItem.ItemIsMovable |
+            QGraphicsRectItem.ItemIsMovable | # we don't set the flag selectable, because we implement our own logic
             QGraphicsRectItem.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
