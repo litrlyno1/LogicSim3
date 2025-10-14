@@ -10,6 +10,8 @@ from view.PinItem import PinItem
 from viewmodel.CanvasVM import CanvasVM
 from viewmodel.LogicGateVM import LogicGateVM
 
+from typing import List
+
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF)
     itemMoved = Signal(GateItem, QPointF)
@@ -24,6 +26,8 @@ class Canvas(QGraphicsView):
         self.connectCanvasVM(canvasVM) #this connection serves an input-only purpose: canvas (view) visually reacts to changes in the VM
         self.update()
         
+        self._connectionDragging = False
+        self._draggingPin = None
         self._lastGateMoved = None
     
     def _importSettings(self, settings: CanvasSettings = CanvasSettings.default()) -> None:
@@ -77,7 +81,17 @@ class Canvas(QGraphicsView):
         print(f"Gate Item added with id {logicGateVM.getId()}")
         self._gateRegistry[logicGateVM.getId()] = item 
         self._scene.addItem(item)
+        self.connectItem(item)
+    
+    def connectItem(self, item : GateItem):
         item.signals.moved.connect(self.gateMoved)
+        self.connectPins(item.getInputPins())
+        self.connectPins(item.getOutputPins())
+    
+    def connectPins(self, pins : List[PinItem]):
+        for pin in pins:
+            pin.signals.mousePressed.connect(self._startDragging)
+            pin.signals.mouseReleased.connect(self._finishDragging)
     
     @Slot(GateItem, QPointF)
     def gateMoved(self, gateItem, pos):
@@ -137,10 +151,11 @@ class Canvas(QGraphicsView):
         self._zoom = 1.0
     
     def mousePressEvent(self, event):
+        print("Canvas : mouse pressed")
         scenePos = self.mapToScene(event.pos())
         item = self._scene.itemAt(scenePos, self.transform())
         print(item)
-        if not event.modifiers() & Qt.ShiftModifier: 
+        if not (event.modifiers() & Qt.ShiftModifier): 
             if isinstance(item, GateItem):
                 self.unselectAllItems(exceptionItems = [item] + item.getInputPins() + item.getOutputPins())
             elif isinstance(item, PinItem):
@@ -150,11 +165,28 @@ class Canvas(QGraphicsView):
             #print("Unselected all")
         super().mousePressEvent(event)
     
+    def mouseReleaseEvent(self, event):
+        print("Canvas : mouse released")
+        if not isinstance(self._scene.itemAt(self.mapToScene(event.pos()), self.transform()), PinItem):
+            self._abortDragging()
+        super().mouseReleaseEvent(event)
+    
+    @Slot(PinItem)
+    def _startDragging(self, pin : PinItem):
+        self._draggingPin = pin
+    
+    @Slot(PinItem)
+    def _finishDragging(self, pin : PinItem):
+        if self._draggingPin:
+            pins = [self._draggingPin, pin]
+            print("Readu to create connection")
+    
+    def _abortDragging(self):
+        self._draggingPin = None
+    
     def unselectAllItems(self, exceptionItems = []):
-        print(self._scene.items())
         for item in self._scene.items():
             if item not in exceptionItems:
-                print("unselecting this one")
                 item.setSelected(False)
     
     def dragEnterEvent(self, event: QDragEnterEvent):

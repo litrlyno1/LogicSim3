@@ -1,7 +1,11 @@
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsItem
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import Qt, QPointF, Signal, QObject
 from PySide6.QtGui import QPen
 from view.settings.PinItem import PinItemSettings
+
+class PinItemSignals(QObject):
+    mousePressed = Signal(object)
+    mouseReleased = Signal(object)
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -11,6 +15,7 @@ class PinItem(QGraphicsEllipseItem):
         self._index = index
         self._importSettings(settings)
         super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2, parentGate)
+        self.signals = PinItemSignals()
         
         self._setupGraphics()
         self.setSelected(False)
@@ -31,6 +36,12 @@ class PinItem(QGraphicsEllipseItem):
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
+    def getParentGate(self):
+        return self._parentGate
+    
+    def getIndex(self):
+        return self._index
+    
     def setSelected(self, selected : bool):
         if selected:
             self.setBrush(self._selectedColor)
@@ -40,8 +51,14 @@ class PinItem(QGraphicsEllipseItem):
         self.update()
     
     def mousePressEvent(self, event):
-        print("Clicked on pinItem")
+        print("Pin: mouse pressed")
         event.accept()
+        self.signals.mousePressed.emit(self)
+    
+    def mouseReleaseEvent(self, event):
+        print("Pin: mouse released")
+        event.accept()
+        self.signals.mouseReleased.emit(self)
     
     def _getRelX(self):
         width = self._parentGate.getWidth()
