@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsEllipseItem
+from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsItem
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen
 from view.settings.PinItem import PinItemSettings
@@ -32,12 +32,16 @@ class PinItem(QGraphicsEllipseItem):
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
     def setSelected(self, selected : bool):
-        super().setSelected(selected)
         if selected:
             self.setBrush(self._selectedColor)
         else:
             self.setBrush(self._color)
+        super().setSelected(selected)
         self.update()
+    
+    def mousePressEvent(self, event):
+        print("Clicked on pinItem")
+        super().mousePressEvent(event)
     
     def _getRelX(self):
         width = self._parentGate.getWidth()

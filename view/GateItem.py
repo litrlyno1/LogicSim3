@@ -63,7 +63,7 @@ class GateItem(QGraphicsRectItem):
         self._outputPins = []
         #print(f"Number of output pins: {self._logicGateVM.getGate().getNumOutputs()}")
         for index in range(self._logicGateVM.getGate().getNumOutputs()):
-            self._inputPins.append(PinItem(parentGate=self, type = "output", index = index))
+            self._outputPins.append(PinItem(parentGate=self, type = "output", index = index))
     
     def getInputPins(self):
         return self._inputPins
@@ -75,6 +75,7 @@ class GateItem(QGraphicsRectItem):
         return self._logicGateVM
 
     def mousePressEvent(self, event):
+        print("gateitem clicked")
         self._dragStartPos = self.pos()
         super().mousePressEvent(event)
         self.toggleSelected()

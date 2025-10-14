@@ -5,6 +5,7 @@ from PySide6.QtCore import Signal, QPointF, Slot, Qt
 from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
 from view.GateItem import GateItem
+from view.PinItem import PinItem
 
 from viewmodel.CanvasVM import CanvasVM
 from viewmodel.LogicGateVM import LogicGateVM
@@ -142,12 +143,15 @@ class Canvas(QGraphicsView):
         if not event.modifiers() & Qt.ShiftModifier: 
             if isinstance(item, GateItem):
                 self.unselectAllItems(exceptionItems = [item] + item.getInputPins() + item.getOutputPins())
+            elif isinstance(item, PinItem):
+                self.unselectAllItems()
             else:
                 self.unselectAllItems()
             #print("Unselected all")
         super().mousePressEvent(event)
     
-    def unselectAllItems(self, exceptionItems = None):
+    def unselectAllItems(self, exceptionItems = []):
+        print(self._scene.items())
         for item in self._scene.items():
             if item not in exceptionItems:
                 print("unselecting this one")
