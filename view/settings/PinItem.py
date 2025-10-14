@@ -23,4 +23,4 @@ class PinItemSettings:
         draggingColor = QColor(230, 230, 230)
         borderColor = QColor(0,0,0)
         borderWidth = 1
-        return cls(radius, color, selectedColor, draggingColor, borderColor, borderWidth)
+        return cls(radius, color, selectedColor, borderColor, draggingColor, borderWidth)

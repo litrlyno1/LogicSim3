@@ -41,7 +41,7 @@ class PinItem(QGraphicsEllipseItem):
     
     def mousePressEvent(self, event):
         print("Clicked on pinItem")
-        super().mousePressEvent(event)
+        event.accept()
     
     def _getRelX(self):
         width = self._parentGate.getWidth()
