@@ -19,13 +19,13 @@ class GateItem(QGraphicsRectItem):
 
         self.setPos(self._logicGateVM.getPos())
         self.setFlags(
+            QGraphicsRectItem.ItemIsSelectable |
             QGraphicsRectItem.ItemIsMovable | # we don't set the flag selectable, because we implement our own logic
             QGraphicsRectItem.ItemSendsGeometryChanges
         )
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
         
-        self.setSelected(False)
         self._dragStartPos = None  #for movement tracking
 
     def _importSettings(self, settings: GateItemSettings):
@@ -42,6 +42,7 @@ class GateItem(QGraphicsRectItem):
         self._textPen = QPen(settings.TEXT_COLOR)
         self._color = settings.COLOR
         self._selectedColor = settings.SELECTED_COLOR
+        self._brush = self._color
     
     def getHeight(self):
         return self._boundingRect.height()
@@ -75,43 +76,28 @@ class GateItem(QGraphicsRectItem):
         return self._logicGateVM
 
     def mousePressEvent(self, event):
-        print("gateitem clicked")
-        self._dragStartPos = self.pos()
+        print("gateitem: clicked")
         super().mousePressEvent(event)
-        self.toggleSelected()
 
     def mouseReleaseEvent(self, event):
-        if self._dragStartPos and self.pos() != self._dragStartPos:
-            self.signals.moved.emit(self, self.pos())
-        self._dragStartPos = None
+        print("gateitem : released")
         super().mouseReleaseEvent(event)
     
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemPositionHasChanged:
-            self.setSelected(True)
+        print(f"GateItem: change = {change}")
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            print(f"GateItem selection : {value}")
+            self._brush = self._selectedColor if value else self._color
+            for pin in self._inputPins + self._outputPins:
+                pin.isParentSelected = value
             self.update()
+        elif change == QGraphicsItem.ItemPositionChange:
+            self.signals.moved.emit(self, self.pos())
         return super().itemChange(change, value)
-
-    def setSelected(self, selected : bool):
-        self.setFlag(QGraphicsItem.ItemIsSelectable, selected)
-        for pin in self._inputPins:
-            pin.setSelected(selected)
-        for pin in self._outputPins:
-            pin.setSelected(selected)
-        self.update()
-    
-    def toggleSelected(self):
-        if self.isSelected():
-            self.setSelected(False)
-        else:
-            self.setSelected(True)
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
-        if self.isSelected():
-            painter.setBrush(self._selectedColor)
-        else:
-            painter.setBrush(self._color)
+        painter.setBrush(self._brush)
         painter.setPen(self._pen)
         painter.drawRect(self.rect())
 

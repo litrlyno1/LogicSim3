@@ -155,14 +155,7 @@ class Canvas(QGraphicsView):
         scenePos = self.mapToScene(event.pos())
         item = self._scene.itemAt(scenePos, self.transform())
         print(item)
-        if not (event.modifiers() & Qt.ShiftModifier): 
-            if isinstance(item, GateItem):
-                self.unselectAllItems(exceptionItems = [item] + item.getInputPins() + item.getOutputPins())
-            elif isinstance(item, PinItem):
-                self.unselectAllItems()
-            else:
-                self.unselectAllItems()
-            #print("Unselected all")
+        #print("Unselected all")
         super().mousePressEvent(event)
     
     def mouseReleaseEvent(self, event):

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsItem
-from PySide6.QtCore import Qt, QPointF, Signal, QObject
+from PySide6.QtCore import Qt, QPointF, Signal, QObject, Slot
 from PySide6.QtGui import QPen
 from view.settings.PinItem import PinItemSettings
 
@@ -18,12 +18,17 @@ class PinItem(QGraphicsEllipseItem):
         self.signals = PinItemSignals()
         
         self._setupGraphics()
-        self.setSelected(False)
+        self.setFlags(
+            QGraphicsEllipseItem.ItemIsSelectable |
+            QGraphicsEllipseItem.ItemSendsGeometryChanges
+        )
+        self._isParentSelected = self._parentGate.isSelected()
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
         self._color = settings.COLOR
         self._selectedColor = settings.SELECTED_COLOR
+        self._draggingColor = settings.DRAGGING_COLOR
         self._borderColor = settings.BORDER_COLOR
         self._borderWidth = settings.BORDER_WIDTH
     
@@ -42,21 +47,28 @@ class PinItem(QGraphicsEllipseItem):
     def getIndex(self):
         return self._index
     
-    def setSelected(self, selected : bool):
-        if selected:
+    @property 
+    def isParentSelected(self):
+        return self._isParentSelected
+    
+    @isParentSelected.setter
+    def isParentSelected(self, value : bool):
+        self._isParentSelected = value
+        if value:
             self.setBrush(self._selectedColor)
         else:
             self.setBrush(self._color)
-        super().setSelected(selected)
         self.update()
     
     def mousePressEvent(self, event):
         print("Pin: mouse pressed")
+        super().mousePressEvent(event)
         event.accept()
         self.signals.mousePressed.emit(self)
     
     def mouseReleaseEvent(self, event):
         print("Pin: mouse released")
+        super().mouseReleaseEvent(event)
         event.accept()
         self.signals.mouseReleased.emit(self)
     
