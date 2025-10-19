@@ -5,7 +5,6 @@ from view.settings.PinItem import PinItemSettings
 
 class PinItemSignals(QObject):
     mousePressed = Signal(object)
-    mouseReleased = Signal(object)
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -70,7 +69,6 @@ class PinItem(QGraphicsEllipseItem):
         print("Pin: mouse released")
         super().mouseReleaseEvent(event)
         event.accept()
-        self.signals.mouseReleased.emit(self)
     
     def _getRelX(self):
         width = self._parentGate.getWidth()

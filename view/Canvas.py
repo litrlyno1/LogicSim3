@@ -90,8 +90,7 @@ class Canvas(QGraphicsView):
     
     def connectPins(self, pins : List[PinItem]):
         for pin in pins:
-            pin.signals.mousePressed.connect(self._startDragging)
-            pin.signals.mouseReleased.connect(self._finishDragging)
+            pin.signals.mousePressed.connect(self._manageDragging)
     
     @Slot(GateItem, QPointF)
     def gateMoved(self, gateItem, pos):
@@ -165,14 +164,17 @@ class Canvas(QGraphicsView):
         super().mouseReleaseEvent(event)
     
     @Slot(PinItem)
-    def _startDragging(self, pin : PinItem):
-        self._draggingPin = pin
-    
-    @Slot(PinItem)
-    def _finishDragging(self, pin : PinItem):
-        if self._draggingPin:
+    def _manageDragging(self, pin : PinItem):
+        if not self._draggingPin:
+            print("starting dragging")
+            self._draggingPin = pin
+            self.unselectAllItems(exceptionItems= [pin])
+        else:
+            print("finishing dragging")
             pins = [self._draggingPin, pin]
-            print("Readu to create connection")
+            if self._draggingPin != pin:
+                print("ready to create connection")
+            self._abortDragging()
     
     def _abortDragging(self):
         self._draggingPin = None
