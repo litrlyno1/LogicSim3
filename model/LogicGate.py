@@ -2,8 +2,9 @@ from __future__ import annotations
 from typing import List
 from model.Pin import InputPin, OutputPin, Pin
 from model.Propagator import Propagator
+from model.Component import Component
 
-class LogicGate(Propagator):
+class LogicGate(Component, Propagator):
 
     def __init__(self, numInputs: int, numOutputs: int = 1):
         super().__init__()

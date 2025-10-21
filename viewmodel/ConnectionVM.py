@@ -9,7 +9,7 @@ class ConnectionVM(QObject):
     modelUpdated = Signal(object)
     
     def __init__(self, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
-        self._connection = Connection.create(gate1.getGate().getPin(type = type1, index = index1), gate2.getGate().getPin(type = type2, index = index2))
+        self._connection = Connection.create(gate1.component.getPin(type = type1, index = index1), gate2.component.getPin(type = type2, index = index2))
         self._gate1 = gate1
         self._gate2 = gate2
         self._type1 = type1
@@ -18,7 +18,6 @@ class ConnectionVM(QObject):
         self._index2 = index2
         self._id = generateId(prefix = "Connection")
         self._modelObserver = ModelObserver(self, self._connection)
-    
     
     def getConnection(self):
         return self._connection

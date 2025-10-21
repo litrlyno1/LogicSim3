@@ -1,22 +1,19 @@
-from PySide6.QtCore import QObject, Signal, Slot, QPointF
+from PySide6.QtCore import Signal, Slot, QPointF
 
 from model.Observer import Observer
 from model.LogicGate import LogicGate
-from core.registry import GateRegistry
-from core.idGenerator import generateId
+from core.registry import ComponentRegistry
 from viewmodel.ModelObserver import ModelObserver
+from viewmodel.ComponentVM import ComponentVM
 
-class LogicGateVM(QObject):
-    posChanged = Signal(str, QPointF)
+class LogicGateVM(ComponentVM):
+    type = "gate"
     modelUpdated = Signal(object)
     
-    def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
-        super().__init__()
+    def __init__(self, gateType : str, pos: QPointF = QPointF(0,0)):
+        super().__init__(component=ComponentRegistry.getComponent(gateType)(), pos = pos)
         self._gateType = gateType
-        self._gate = GateRegistry.getGate(self._gateType)()
-        self._id = generateId(prefix = self._gateType)
-        self._pos = pos
-        self._modelObserver = ModelObserver(self, self._gate)
+        self._modelObserver = ModelObserver(self, self._component)
         #print(self.__dict__)
     
     def getId(self):
@@ -24,9 +21,6 @@ class LogicGateVM(QObject):
     
     def getGateType(self) -> str:
         return self._gateType
-    
-    def getGate(self) -> LogicGate:
-        return self._gate
     
     def getPos(self) -> QPointF:
         return self._pos

@@ -1,9 +1,11 @@
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem
 from PySide6.QtGui import QPainter, QPen, QFont
 from PySide6.QtCore import QRectF, Qt, QPointF, Signal, QObject
+
 from viewmodel.LogicGateVM import LogicGateVM
 from view.settings.GateItem import GateItemSettings
 from view.PinItem import PinItem
+from view.ComponentItem import ComponentItem
 
 class GateItemSignals(QObject):
     moved = Signal(object, QPointF)
@@ -11,13 +13,13 @@ class GateItemSignals(QObject):
 class GateItem(QGraphicsRectItem):
     
     def __init__(self, logicGateVM: LogicGateVM, settings: GateItemSettings = GateItemSettings.default()):
-        self._logicGateVM = logicGateVM
+        self._componentItem = ComponentItem(logicGateVM) 
         self._importSettings(settings)
         self.signals = GateItemSignals()
         super().__init__(self._boundingRect)
         self.initPinItems()
 
-        self.setPos(self._logicGateVM.getPos())
+        self.setPos(self._componentItem.componentVM.pos)
         self.setFlags(
             QGraphicsRectItem.ItemIsSelectable |
             QGraphicsRectItem.ItemIsMovable | # we don't set the flag selectable, because we implement our own logic
@@ -56,15 +58,17 @@ class GateItem(QGraphicsRectItem):
     
     def initInputPins(self):
         self._inputPins = []
-        #print(f"Number of input pins: {self._logicGateVM.getGate().getNumInputs()}")
-        for index in range(self._logicGateVM.getGate().getNumInputs()):
+        for index in range(self._componentItem.componentVM.component.getNumInputs()):
             self._inputPins.append(PinItem(parentGate=self, type = "input", index = index))
         
     def initOutputPins(self):
         self._outputPins = []
-        #print(f"Number of output pins: {self._logicGateVM.getGate().getNumOutputs()}")
-        for index in range(self._logicGateVM.getGate().getNumOutputs()):
+        for index in range(self._componentItem.componentVM.component.getNumOutputs()):
             self._outputPins.append(PinItem(parentGate=self, type = "output", index = index))
+    
+    @property 
+    def componentItem(self):
+        return self._componentItem
     
     def getInputPins(self):
         return self._inputPins
@@ -77,9 +81,6 @@ class GateItem(QGraphicsRectItem):
     
     def getOutputPin(self, index : int):
         return self._outputPins[index]
-    
-    def getLogicGateVM(self):
-        return self._logicGateVM
 
     def mousePressEvent(self, event):
         print("gateitem: clicked")
@@ -97,7 +98,7 @@ class GateItem(QGraphicsRectItem):
                 pin.isParentSelected = value
             self.update()
         elif change == QGraphicsItem.ItemPositionChange:
-            self.signals.moved.emit(self, self.pos())
+            self.signals.moved.emit(self._componentItem, self.pos())
         return super().itemChange(change, value)
 
     def onItemMoved(self):
@@ -114,5 +115,5 @@ class GateItem(QGraphicsRectItem):
 
         painter.setFont(self._font)
         painter.setPen(self._textPen)
-        gate_type = self._logicGateVM.getGateType()
+        gate_type = self._componentItem.componentVM.getGateType()
         painter.drawText(self.rect(), Qt.AlignCenter, gate_type)

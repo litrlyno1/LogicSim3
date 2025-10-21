@@ -8,8 +8,8 @@ class EventHandler:
         self._commandManager = commandManager
         print("EventHandler initialized")
         self._eventBus.subscribe(eventName= "ItemDropped", 
-                                handler = lambda gateType, pos: self._commandManager.createCommand(commandType="AddGate", gateType = gateType, pos = pos))
+                                handler = lambda componentType, pos: self._commandManager.createCommand(commandType="AddComponent", componentType = componentType, pos = pos))
         self._eventBus.subscribe(eventName = "ItemMoved",
-                                handler = lambda gate, pos: self._commandManager.createCommand(commandType = "MoveGate", gate = gate.getLogicGateVM(), oldPos = gate.getLogicGateVM().getPos(), newPos = pos))
+                                handler = lambda component, pos: self._commandManager.createCommand(commandType = "MoveComponent", component = component, oldPos = component.pos, newPos = pos))
         self._eventBus.subscribe(eventName= "ConnectionCreated",
                                 handler = lambda gate1, type1, index1, gate2, type2, index2: self._commandManager.createCommand(commandType= "CreateConnection", gate1 = gate1, type1 = type1, index1 = index1, gate2 = gate2, type2 = type2, index2 = index2))

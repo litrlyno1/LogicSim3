@@ -101,9 +101,9 @@ class PinItem(QGraphicsEllipseItem):
     def _getRelY(self):
         height = self._parentGate.getHeight()
         if self._type == "output":
-            pinAmount = self._parentGate.getLogicGateVM().getGate().getNumOutputs()
+            pinAmount = self._parentGate.componentItem.componentVM.component.getNumOutputs()
         else:
-            pinAmount = self._parentGate.getLogicGateVM().getGate().getNumInputs()
+            pinAmount = self._parentGate.componentItem.componentVM.component.getNumInputs()
         
         step = height / (pinAmount+1)
         y = (self._index+1)*step

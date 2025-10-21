@@ -3,32 +3,32 @@ from typing import List
 
 from viewmodel.LogicGateVM import LogicGateVM
 from viewmodel.ConnectionVM import ConnectionVM
+from viewmodel.ComponentVM import ComponentVM
 
 class CanvasVM(QObject):
-    gateAdded = Signal(LogicGateVM)
-    gateRemoved = Signal(LogicGateVM)
-    gatePosUpdated = Signal(str, QPointF)
+    componentAdded = Signal(ComponentVM)
+    componentRemoved = Signal(ComponentVM)
+    componentPosUpdated = Signal(str, QPointF)
     connectionAdded = Signal(object)
     connectionRemoved = Signal(ConnectionVM)
     
     def __init__(self):
         super().__init__()
-        self._gates: List[LogicGateVM] = []
+        self._components: List[ComponentVM] = []
         self._connections: List[ConnectionVM] = []
     
-    def getGates(self) -> List[LogicGateVM]:
-        return self._gates
+    def getComponents(self) -> List[ComponentVM]:
+        return self._components
 
-    def removeGate(self, gate : LogicGateVM) -> None:
-        self._gates.remove(gate)
-        self.gateRemoved.emit(gate)
+    def removeComponent(self, component : ComponentVM) -> None:
+        self._components.remove(component)
+        self.componentRemoved.emit(component)
     
-    def addGate(self, gate : LogicGateVM) -> None:
-        self._gates.append(gate)
-        gate.posChanged.connect(self.gatePosChanged)
-        self.gateAdded.emit(gate)
-        #print("CanvasVM: Gate added:")
-        #print(gate.__dict__)
+    def addComponent(self, component : ComponentVM) -> None:
+        self._components.append(component)
+        print(component)
+        component.posChanged.connect(self.componentPosChanged)
+        self.componentAdded.emit(component)
     
     def addConnection(self, connection : ConnectionVM):
         self._connections.append(connection)
@@ -39,5 +39,5 @@ class CanvasVM(QObject):
         self.connectionRemoved.emit(connection)
     
     @Slot(str, QPointF)
-    def gatePosChanged(self, id : str, pos : QPointF) -> None:
-        self.gatePosUpdated.emit(id, pos)
+    def componentPosChanged(self, id : str, pos : QPointF) -> None:
+        self.componentPosUpdated.emit(id, pos)

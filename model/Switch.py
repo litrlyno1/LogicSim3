@@ -1,13 +1,12 @@
-from Interfaces import IToggleable
-from LogicGate import LogicGate
+from model.Interfaces import IToggleable
+from model.Observer import Observable
+from model.Component import Component
 
-class Switch(LogicGate, IToggleable):
-    name = "Switch"
+class Switch(Component, Observable, IToggleable):
+    type = "Switch"
     
     def __init__(self):
-        super().__init__(numInputs=0, numOutputs=1)
         self._value = False
-        self.type = "Switch"
     
     def toggle(self):
         self._value = not self._value

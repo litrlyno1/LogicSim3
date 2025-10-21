@@ -5,7 +5,7 @@ from viewmodel.command.CommandManager import CommandManager
 from viewmodel.EventHandler import EventHandler
 from viewmodel.CanvasVM import CanvasVM
 
-from core.registry import GateRegistry
+from core.registry import ComponentRegistry
 
 def main():
     app = QApplication(sys.argv)

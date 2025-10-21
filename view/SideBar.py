@@ -3,12 +3,12 @@ from PySide6.QtGui import QDrag, QPixmap, QPainter
 from PySide6.QtCore import Qt, QMimeData
 from typing import List
 
-from core.registry import GateRegistry
+from core.registry import ComponentRegistry
 from view.settings.SideBar import SideBarSettings
 
 class SideBar(QWidget):
     
-    def __init__(self,  parent=None, gateTypes: list[str] = GateRegistry.getAllGates(), settings = SideBarSettings.default()):
+    def __init__(self,  parent=None, gateTypes: list[str] = ComponentRegistry.getAllComponents(), settings = SideBarSettings.default()):
         super().__init__(parent)
         self.gateTypes = gateTypes
         self._importSettings(settings)

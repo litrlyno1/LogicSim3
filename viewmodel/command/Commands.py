@@ -2,77 +2,104 @@ from PySide6.QtCore import QPointF
 
 from viewmodel.command.base import Command
 from viewmodel.CanvasVM import CanvasVM
+from viewmodel.ComponentVM import ComponentVM
 from viewmodel.LogicGateVM import LogicGateVM
+from viewmodel.BulbVM import BulbVM
+from viewmodel.SwitchVM import SwitchVM
 from viewmodel.ConnectionVM import ConnectionVM
 
-class AddGate(Command):
-    def __init__(self, canvasVM : CanvasVM, gateType : str, pos : QPointF):
+# temporary dictionary
+text_vm = {
+    "Switch" : SwitchVM,
+    "Bulb" : BulbVM,
+    "AndGate" : LogicGateVM,
+    "OrGate" : LogicGateVM,
+    "XorGate" : LogicGateVM,
+    "NandGate" : LogicGateVM,
+    "NotGate" : LogicGateVM
+}
+
+class AddComponent(Command):
+    def __init__(self, canvasVM : CanvasVM, componentType : str, pos : QPointF):
         super().__init__()
-        print(f"Gate type: {gateType}")
+        print(f"Component type: {componentType}")
         print(f"pos: {pos}")
         self._canvas = canvasVM
-        self._gate = LogicGateVM(gateType, pos)
+        componentClass = text_vm[componentType]
+        print(f"Add Component command: retrieved class {componentClass}")
+        if componentClass == LogicGateVM:
+            self._component = LogicGateVM(componentType, pos)
+        else:
+            self._component = componentClass(pos)
+        print(f"Add Component command: created component {self._component}")
+        print(self._component)
         self._pos = pos
     
-    def getGate(self):
-        return self._gate
+    @property
+    def component(self):
+        return self._component
     
     def getCanvas(self):
         return self._canvas
     
     def execute(self):
-        self._canvas.addGate(self._gate)
+        self._canvas.addComponent(self._component)
     
     def undo(self):
-        self._canvas.removeGate(self._gate)
+        self._canvas.removeComponent(self._component)
 
-class MoveGate(Command):
-    def __init__(self, canvasVM : CanvasVM, gate : LogicGateVM, oldPos : QPointF, newPos : QPointF):
+class MoveComponent(Command):
+    def __init__(self, canvasVM : CanvasVM, component : ComponentVM, oldPos : QPointF, newPos : QPointF):
         super().__init__()
         self._canvas = canvasVM
-        self._gate = gate
+        self._component = component
         self._oldPos = oldPos
         self._newPos = newPos
     
-    def getGate(self):
-        return self._gate
+    @property
+    def component(self):
+        return self._component
     
-    def getOldPos(self):
+    @property
+    def oldPos(self):
         return self._oldPos
     
-    def getNewPos(self):
+    @property
+    def newPos(self):
         return self._newPos
     
     def execute(self):
-        self._gate.setPos(self._newPos)
+        self._component.setPos(self._newPos)
     
     def undo(self):
-        self._gate.setPos(self._oldPos)
+        self._component.setPos(self._oldPos)
 
-class RemoveGate(Command):
-    def __init__(self, canvasVM : CanvasVM, gate : LogicGateVM):
+class RemoveComponent(Command):
+    def __init__(self, canvasVM : CanvasVM, component : ComponentVM):
         super().__init__()
         self._canvas = canvasVM
-        self._gate = gate
+        self._component = component
     
-    def getGate(self):
-        return self._gate
+    @property
+    def component(self):
+        return self._component
     
-    def getCanvas(self):
+    @property
+    def canvas(self):
         return self._canvas
     
     def execute(self):
-        self._canvas.removeGate(self._gate)
+        self._canvas.removeComponent(self._component)
     
     def undo(self):
-        self._canvas.addGate(self._gate)
+        self._canvas.addComponent(self._component)
 
 class CreateConnection(Command):
     def __init__(self, canvasVM : CanvasVM, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
         self._canvas = canvasVM
         print("Command: creating connection")
-        print(f"gate (model): {gate1.getGate()}")
-        print(f"gate2 (model): {gate2.getGate()}")
+        print(f"gate (model): {gate1.component}")
+        print(f"gate2 (model): {gate2.component}")
         self._connection = ConnectionVM(gate1, type1, index1, gate2, type2, index2)
     
     def getConnection(self):
