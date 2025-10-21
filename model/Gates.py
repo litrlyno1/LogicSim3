@@ -31,11 +31,3 @@ class NotGate(LogicGate):
     
     def getOutput(self):
         return not self.getInputPin(0).getOutput()
-
-class BulbGate(LogicGate):
-    
-    def __init__(self):
-        super().__init__(numInputs = 1)
-    
-    def getOutput(self):
-        return (self.inputPins[0].getOutput())
