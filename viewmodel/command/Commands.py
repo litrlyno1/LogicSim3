@@ -71,8 +71,8 @@ class CreateConnection(Command):
     def __init__(self, canvasVM : CanvasVM, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
         self._canvas = canvasVM
         print("Command: creating connection")
-        print(f"gate1: {gate1.__dict__}")
-        print(f"gate2: {gate2.__dict__}")
+        print(f"gate (model): {gate1.getGate()}")
+        print(f"gate2 (model): {gate2.getGate()}")
         self._connection = ConnectionVM(gate1, type1, index1, gate2, type2, index2)
     
     def getConnection(self):

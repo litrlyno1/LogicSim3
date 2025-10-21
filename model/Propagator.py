@@ -5,8 +5,11 @@ from model.Interfaces import ISignalSource
 class Propagator(Observer, Observable, ISignalSource):
     def update(self):
         #print(self.type)
-        print("model: propagation")
-        print(f"caller: {self}")
+        print("Update called in model")
+        print(f"Caller {self}")
+        if hasattr(self, 'gate'):
+            print(f"with logicGate {self.gate}")
+        print(f"observers {self._observers}")
         self.notify()
     
     def getOutput(self):

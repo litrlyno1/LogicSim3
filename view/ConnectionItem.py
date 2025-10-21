@@ -35,3 +35,15 @@ class ConnectionItem(QGraphicsPathItem):
 
         path.cubicTo(ctrl1, ctrl2, end)
         return path
+    
+    @staticmethod
+    def isViablePinPair(pin1 : PinItem, pin2 : PinItem) -> bool:
+        if pin1.getParentGate() == pin2.getParentGate():
+            print("Pin pair not viable: same parent gate")
+            return False
+        elif pin1.getType == pin2.getType:
+            print("Pin pair not viable: same type")
+            return False
+        else:
+            print("Pin pair viable")
+            return True

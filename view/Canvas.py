@@ -189,7 +189,7 @@ class Canvas(QGraphicsView):
         else:
             print("finishing dragging")
             pins = [self._draggingPin, pin]
-            if self._draggingPin != pin:
+            if ConnectionItem.isViablePinPair(self._draggingPin, pin):
                 self.connectionCreated.emit(self._draggingPin, pin)
             self._abortDragging()
     
