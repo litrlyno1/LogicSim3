@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List
-from model.Pin import InputPin, OutputPin
+from model.Pin import InputPin, OutputPin, Pin
 from model.Propagator import Propagator
 
 class LogicGate(Propagator):
@@ -24,6 +24,9 @@ class LogicGate(Propagator):
 
     def getInputPin(self, index: int) -> InputPin:
         return self._pins.getInputPin(index)
+
+    def getPin(self, type : str, index : int) -> Pin:
+        return self.getInputPin(index) if type == "input" else self.getOutputPin(index)
 
     def getOutputPins(self) -> List[OutputPin]:
         return self._pins.outputPins

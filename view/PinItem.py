@@ -22,6 +22,7 @@ class PinItem(QGraphicsEllipseItem):
             QGraphicsEllipseItem.ItemSendsGeometryChanges
         )
         self._isParentSelected = self._parentGate.isSelected()
+        self._connectionItems = []
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
@@ -43,6 +44,9 @@ class PinItem(QGraphicsEllipseItem):
     def getParentGate(self):
         return self._parentGate
     
+    def getType(self):
+        return self._type
+    
     def getIndex(self):
         return self._index
     
@@ -59,6 +63,18 @@ class PinItem(QGraphicsEllipseItem):
             self.setBrush(self._color)
         self.update()
     
+    def onParentMoved(self):
+        if self._connectionItems:
+            for connectionItem in self._connectionItems:
+                connectionItem.update_path()
+                connectionItem.update()
+    
+    def addConnectionItem(self, connectionItem):
+        self._connectionItems.append(connectionItem)
+    
+    def removeConnectionItem(self, connectionItem):
+        self._connectionItems.remove(connectionItem)
+    
     def mousePressEvent(self, event):
         print("Pin: mouse pressed")
         super().mousePressEvent(event)
@@ -69,6 +85,11 @@ class PinItem(QGraphicsEllipseItem):
         print("Pin: mouse released")
         super().mouseReleaseEvent(event)
         event.accept()
+    
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange:
+            print("PinItem : Position change")
+        return super().itemChange(change, value)
     
     def _getRelX(self):
         width = self._parentGate.getWidth()

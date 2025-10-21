@@ -11,3 +11,5 @@ class EventHandler:
                                 handler = lambda gateType, pos: self._commandManager.createCommand(commandType="AddGate", gateType = gateType, pos = pos))
         self._eventBus.subscribe(eventName = "ItemMoved",
                                 handler = lambda gate, pos: self._commandManager.createCommand(commandType = "MoveGate", gate = gate.getLogicGateVM(), oldPos = gate.getLogicGateVM().getPos(), newPos = pos))
+        self._eventBus.subscribe(eventName= "ConnectionCreated",
+                                handler = lambda gate1, type1, index1, gate2, type2, index2: self._commandManager.createCommand(commandType= "CreateConnection", gate1 = gate1, type1 = type1, index1 = index1, gate2 = gate2, type2 = type2, index2 = index2))

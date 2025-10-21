@@ -6,15 +6,18 @@ from view.EventBus import EventBus
 from view.settings.Canvas import CanvasSettings
 from view.GateItem import GateItem
 from view.PinItem import PinItem
+from view.ConnectionItem import ConnectionItem
 
 from viewmodel.CanvasVM import CanvasVM
 from viewmodel.LogicGateVM import LogicGateVM
+from viewmodel.ConnectionVM import ConnectionVM
 
 from typing import List
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF)
     itemMoved = Signal(GateItem, QPointF)
+    connectionCreated = Signal(PinItem, PinItem)
     
     def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
@@ -48,6 +51,9 @@ class Canvas(QGraphicsView):
     def _connectEventBus(self) -> None:
         self.itemDropped.connect(lambda gateType, pos: self._eventBus.emit(eventName = "ItemDropped", gateType = gateType, pos = pos))
         self.itemMoved.connect(lambda gate, pos: self._eventBus.emit(eventName = "ItemMoved", gate = gate, pos = pos))
+        self.connectionCreated.connect(lambda pin1, pin2: self._eventBus.emit(eventName = "ConnectionCreated", 
+                                                                                gate1 = pin1.getParentGate().getLogicGateVM(), type1 = pin1.getType(), index1 = pin1.getIndex(),
+                                                                                gate2 = pin2.getParentGate().getLogicGateVM(), type2 = pin2.getType(), index2 = pin2.getIndex()))
     
     def _setupGraphics(self) -> None:
         self._scene = QGraphicsScene(self)
@@ -73,6 +79,7 @@ class Canvas(QGraphicsView):
         if self._canvasVM is not None:
             self._canvasVM.gateAdded.connect(self.addGateItem)
             self._canvasVM.gatePosUpdated.connect(self.gateMovedUpdate)
+            self._canvasVM.connectionAdded.connect(self.addConnectionItem)
     
     @Slot(LogicGateVM)
     def addGateItem(self, logicGateVM):
@@ -82,6 +89,14 @@ class Canvas(QGraphicsView):
         self._gateRegistry[logicGateVM.getId()] = item 
         self._scene.addItem(item)
         self.connectItem(item)
+    
+    @Slot(object)
+    def addConnectionItem(self, connectionVM : ConnectionVM):
+        print("Canvas: adding connection")
+        pin1 = self._gateRegistry[connectionVM.getGate1().getId()].getInputPin(connectionVM._index1) if connectionVM._type1 == "input" else self._gateRegistry[connectionVM.getGate1().getId()].getOutputPin(connectionVM._index1)
+        pin2 = self._gateRegistry[connectionVM.getGate2().getId()].getInputPin(connectionVM._index2) if connectionVM._type2 == "input" else self._gateRegistry[connectionVM.getGate2().getId()].getOutputPin(connectionVM._index2)
+        item = ConnectionItem(pin1, pin2)
+        self._scene.addItem(item)
     
     def connectItem(self, item : GateItem):
         item.signals.moved.connect(self.gateMoved)
@@ -102,7 +117,9 @@ class Canvas(QGraphicsView):
     @Slot(str, QPointF)
     def gateMovedUpdate(self, id, pos):
         print(f"Moving gate with id {id}")
-        self._gateRegistry[id].setPos(pos)
+        item = self._gateRegistry[id]
+        item.setPos(pos)
+        item.onItemMoved()
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)
@@ -173,7 +190,7 @@ class Canvas(QGraphicsView):
             print("finishing dragging")
             pins = [self._draggingPin, pin]
             if self._draggingPin != pin:
-                print("ready to create connection")
+                self.connectionCreated.emit(self._draggingPin, pin)
             self._abortDragging()
     
     def _abortDragging(self):

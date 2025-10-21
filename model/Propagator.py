@@ -5,6 +5,8 @@ from model.Interfaces import ISignalSource
 class Propagator(Observer, Observable, ISignalSource):
     def update(self):
         #print(self.type)
+        print("model: propagation")
+        print(f"caller: {self}")
         self.notify()
     
     def getOutput(self):

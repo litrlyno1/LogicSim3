@@ -72,6 +72,12 @@ class GateItem(QGraphicsRectItem):
     def getOutputPins(self):
         return self._outputPins
     
+    def getInputPin(self, index : int):
+        return self._inputPins[index]
+    
+    def getOutputPin(self, index : int):
+        return self._outputPins[index]
+    
     def getLogicGateVM(self):
         return self._logicGateVM
 
@@ -84,7 +90,6 @@ class GateItem(QGraphicsRectItem):
         super().mouseReleaseEvent(event)
     
     def itemChange(self, change, value):
-        print(f"GateItem: change = {change}")
         if change == QGraphicsItem.ItemSelectedHasChanged:
             print(f"GateItem selection : {value}")
             self._brush = self._selectedColor if value else self._color
@@ -94,6 +99,12 @@ class GateItem(QGraphicsRectItem):
         elif change == QGraphicsItem.ItemPositionChange:
             self.signals.moved.emit(self, self.pos())
         return super().itemChange(change, value)
+
+    def onItemMoved(self):
+        for pin in self._inputPins:
+            pin.onParentMoved()
+        for pin in self._outputPins:
+            pin.onParentMoved()
 
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)

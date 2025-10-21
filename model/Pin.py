@@ -1,12 +1,11 @@
 from __future__ import annotations
 from model.Propagator import Propagator
 from model.Interfaces import ISingleConnectable, IMultiConnectable
-import weakref
 
 class Pin(Propagator):
     def __init__(self, gate: "LogicGate"):
         super().__init__()
-        self.gate = weakref.ref(gate)
+        self.gate = gate
 
 class InputPin(Pin, ISingleConnectable):
     def __init__(self, gate, index):
@@ -15,7 +14,7 @@ class InputPin(Pin, ISingleConnectable):
             raise IndexError("Wrong index when initializing ")
         self.index = index
         self._connection = None
-        self.type = "InputPin"
+        self.type = "input"
         self.attach(self.gate)
     
     @property
@@ -44,7 +43,7 @@ class OutputPin(Pin, IMultiConnectable):
             raise IndexError("Wrong index when initializing ")
         self.index = index
         self._connections: list[Connection] = []
-        self.type = "OutputPin"
+        self.type = "output"
 
     @property
     def connections(self):
@@ -58,19 +57,17 @@ class OutputPin(Pin, IMultiConnectable):
     def connect(self, conn: Connection):
         self._connections.append(conn)
         self.attach(conn)
-        self.update()
     
     def disconnect(self, conn: Connection):
         self._connections.remove(conn)
         self.detach(conn)
-        conn.update()
 
 #connection is an additional layer for pins interacting with each other
 class Connection(Propagator):
     def __init__(self, source : Pin = None, target : Pin = None):
         super().__init__()
-        self._source = weakref.ref(source)
-        self._target = weakref.ref(target)
+        self._source = source
+        self._target = target
         self.type = "Connection"
     
     def getOutput(self):
@@ -86,6 +83,9 @@ class Connection(Propagator):
                 sourcePin = pin1
                 targetPin = pin2
             
+            print("Connection: creating...")
+            print(f"pin1 : {pin1.__dict__}")
+            print(f"pin2 : {pin2.__dict__}")
             conn = Connection(source = sourcePin, target = targetPin)
             sourcePin.connect(conn)
             targetPin.connect(conn)

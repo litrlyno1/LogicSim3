@@ -4,14 +4,11 @@ from model.Observer import Observer
 from model.LogicGate import LogicGate
 from core.registry import GateRegistry
 from core.idGenerator import generateId
-
-from viewmodel.Selectable import Selectable
-from viewmodel.Deletable import Deletable
 from viewmodel.ModelObserver import ModelObserver
 
-class LogicGateVM(QObject, Selectable, Deletable):
+class LogicGateVM(QObject):
     posChanged = Signal(str, QPointF)
-    modelUpdated = Signal()
+    modelUpdated = Signal(object)
     
     def __init__(self, gateType : str, pos: QPointF = QPointF(0,0), selected : bool = False):
         super().__init__()
@@ -40,7 +37,3 @@ class LogicGateVM(QObject, Selectable, Deletable):
     
     def onModelUpdate(self):
         self.modelUpdated.emit(self)
-    
-    @classmethod
-    def create(cls, gateType : str, pos : QPointF):
-        return(cls(gateType, pos))

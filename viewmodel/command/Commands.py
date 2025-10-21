@@ -3,6 +3,7 @@ from PySide6.QtCore import QPointF
 from viewmodel.command.base import Command
 from viewmodel.CanvasVM import CanvasVM
 from viewmodel.LogicGateVM import LogicGateVM
+from viewmodel.ConnectionVM import ConnectionVM
 
 class AddGate(Command):
     def __init__(self, canvasVM : CanvasVM, gateType : str, pos : QPointF):
@@ -10,7 +11,7 @@ class AddGate(Command):
         print(f"Gate type: {gateType}")
         print(f"pos: {pos}")
         self._canvas = canvasVM
-        self._gate = LogicGateVM.create(gateType, pos)
+        self._gate = LogicGateVM(gateType, pos)
         self._pos = pos
     
     def getGate(self):
@@ -65,3 +66,23 @@ class RemoveGate(Command):
     
     def undo(self):
         self._canvas.addGate(self._gate)
+
+class CreateConnection(Command):
+    def __init__(self, canvasVM : CanvasVM, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
+        self._canvas = canvasVM
+        print("Command: creating connection")
+        print(f"gate1: {gate1.__dict__}")
+        print(f"gate2: {gate2.__dict__}")
+        self._connection = ConnectionVM(gate1, type1, index1, gate2, type2, index2)
+    
+    def getConnection(self):
+        return self._connection
+    
+    def getCanvas(self):
+        return self._canvas
+    
+    def execute(self):
+        self._canvas.addConnection(self._connection)
+    
+    def undo(self):
+        self._canvas.removeConnection(self._connection)
