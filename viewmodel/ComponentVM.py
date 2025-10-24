@@ -19,3 +19,11 @@ class ComponentVM(QObject):
     @property
     def pos(self):
         return self._pos
+    
+    @property
+    def id(self):
+        return self._id
+    
+    def setPos(self, pos : QPointF) -> None:
+        self._pos = pos
+        self.posChanged.emit(self._id, pos)

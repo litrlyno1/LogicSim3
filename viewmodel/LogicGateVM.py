@@ -16,18 +16,8 @@ class LogicGateVM(ComponentVM):
         self._modelObserver = ModelObserver(self, self._component)
         #print(self.__dict__)
     
-    def getId(self):
-        return self._id
-    
     def getGateType(self) -> str:
         return self._gateType
-    
-    def getPos(self) -> QPointF:
-        return self._pos
-    
-    def setPos(self, pos : QPointF) -> None:
-        self._pos = pos
-        self.posChanged.emit(self._id, pos)
     
     def onModelUpdate(self):
         self.modelUpdated.emit(self)

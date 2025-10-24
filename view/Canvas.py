@@ -101,16 +101,16 @@ class Canvas(QGraphicsView):
     def addComponentItem(self, componentVM):
         print("Placing Component Item: ")
         item = vm_view[componentVM.__class__](componentVM)
-        print(f"Component Item added with id {componentVM.getId()}")
-        self._componentRegistry[componentVM.getId()] = item 
+        print(f"Component Item added with id {componentVM.id}")
+        self._componentRegistry[componentVM.id] = item 
         self._scene.addItem(item)
         self.connectItem(item)
     
     @Slot(object)
     def addConnectionItem(self, connectionVM : ConnectionVM):
         print("Canvas: adding connection")
-        pin1 = self._componentRegistry[connectionVM.getGate1().getId()].getInputPin(connectionVM._index1) if connectionVM._type1 == "input" else self._componentRegistry[connectionVM.getGate1().getId()].getOutputPin(connectionVM._index1)
-        pin2 = self._componentRegistry[connectionVM.getGate2().getId()].getInputPin(connectionVM._index2) if connectionVM._type2 == "input" else self._componentRegistry[connectionVM.getGate2().getId()].getOutputPin(connectionVM._index2)
+        pin1 = self._componentRegistry[connectionVM.getGate1().id].getInputPin(connectionVM._index1) if connectionVM._type1 == "input" else self._componentRegistry[connectionVM.getGate1().id].getOutputPin(connectionVM._index1)
+        pin2 = self._componentRegistry[connectionVM.getGate2().id].getInputPin(connectionVM._index2) if connectionVM._type2 == "input" else self._componentRegistry[connectionVM.getGate2().id].getOutputPin(connectionVM._index2)
         item = ConnectionItem(pin1, pin2)
         self._scene.addItem(item)
     
@@ -186,7 +186,7 @@ class Canvas(QGraphicsView):
         print("Canvas : mouse pressed")
         scenePos = self.mapToScene(event.pos())
         item = self._scene.itemAt(scenePos, self.transform())
-        print(item)
+        print(f"Canvas: clicked item {item}")
         #print("Unselected all")
         super().mousePressEvent(event)
     

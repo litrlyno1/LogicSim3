@@ -1,23 +1,32 @@
-from PySide6.QtWidgets import QGraphicsEllipseItem
-from PySide6.QtGui import QBrush, QColor
-from PySide6.QtCore import QRectF
+from PySide6.QtGui import QBrush, QColor, QPainter, QPen
+from PySide6.QtCore import QRectF, Qt
 
 from view.ComponentItem import ComponentItem
+from viewmodel.ComponentVM import ComponentVM
 
-class BulbItem(QGraphicsEllipseItem):
-    def __init__(self, radius=20, parent=None):
-        super().__init__(QRectF(-radius, -radius, 2*radius, 2*radius), parent)
-        self._on = False
-        self._radius = radius
-        self._off_color = QColor("gray")
-        self._on_color = QColor("yellow")
-        self.setBrush(QBrush(self._off_color))
-        self.setZValue(-1)  
+class BulbItem(ComponentItem):
+    
+    def __init__(self, componentVM):
+        super().__init__(componentVM=componentVM)
+        self._rect = QRectF(
+            -80 / 2,
+            -50 / 2,
+            80,
+            50
+        )
+    
+    def boundingRect(self):
+        return self._rect
 
-    def setState(self, state: bool):
-        self._on = state
-        color = self._on_color if state else self._off_color
-        self.setBrush(QBrush(color))
+    def paint(self, painter: QPainter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
 
-    def isOn(self) -> bool:
-        return self._on
+        color = QColor("blue")
+        brush = QBrush(color)
+        painter.setBrush(brush)
+
+        pen = QPen(QColor("black"))
+        pen.setWidth(2)
+        painter.setPen(pen)
+
+        painter.drawRect(self._rect)

@@ -4,7 +4,7 @@ from viewmodel.ComponentVM import ComponentVM
 from model.Switch import Switch
 
 class SwitchVM(ComponentVM):
-    type = "gate"
+    type = "switch"
     
     def __init__(self, pos: QPointF = QPointF(0,0)):
         super().__init__(component = Switch(), pos = pos)

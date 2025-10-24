@@ -8,12 +8,13 @@ class PinItemSignals(QObject):
 
 class PinItem(QGraphicsEllipseItem):
 
-    def __init__(self, parentGate : "GateItem", type : str, index : int, settings : PinItemSettings = PinItemSettings.default()):
-        self._parentGate = parentGate
+    def __init__(self, parentComponent : "ComponentItem", type : str, index : int, settings : PinItemSettings = PinItemSettings.default()):
+        self._parentComponent = parentComponent
         self._type = type
         self._index = index
         self._importSettings(settings)
-        super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2, parentGate)
+        super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2)
+        self.setParentItem(parentComponent)
         self.signals = PinItemSignals()
         
         self._setupGraphics()
@@ -21,7 +22,7 @@ class PinItem(QGraphicsEllipseItem):
             QGraphicsEllipseItem.ItemIsSelectable |
             QGraphicsEllipseItem.ItemSendsGeometryChanges
         )
-        self._isParentSelected = self._parentGate.isSelected()
+        self._isParentSelected = self._parentComponent.isSelected()
         self._connectionItems = []
     
     def _importSettings(self, settings : PinItemSettings):
@@ -41,8 +42,8 @@ class PinItem(QGraphicsEllipseItem):
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
-    def getParentGate(self):
-        return self._parentGate
+    def getparentComponent(self):
+        return self._parentComponent
     
     def getType(self):
         return self._type
@@ -92,18 +93,18 @@ class PinItem(QGraphicsEllipseItem):
         return super().itemChange(change, value)
     
     def _getRelX(self):
-        width = self._parentGate.getWidth()
+        width = self._parentComponent.getWidth()
         if self._type == "output":
             return width/2
         else:
             return -width/2
     
     def _getRelY(self):
-        height = self._parentGate.getHeight()
+        height = self._parentComponent.getHeight()
         if self._type == "output":
-            pinAmount = self._parentGate.componentItem.componentVM.component.getNumOutputs()
+            pinAmount = self._parentComponent.componentVM.component.getNumOutputs()
         else:
-            pinAmount = self._parentGate.componentItem.componentVM.component.getNumInputs()
+            pinAmount = self._parentComponent.componentVM.component.getNumInputs()
         
         step = height / (pinAmount+1)
         y = (self._index+1)*step

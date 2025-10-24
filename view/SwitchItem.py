@@ -1,26 +1,35 @@
-from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsSceneMouseEvent
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QPainter, QPen
 from PySide6.QtCore import Qt, QRectF
 
 from view.ComponentItem import ComponentItem
 
-class SwitchItem(QGraphicsEllipseItem):
-    def __init__(self, radius=20, parent=None):
-        super().__init__(QRectF(-radius, -radius, 2*radius, 2*radius), parent)
-        self.state = False
-        self.setBrush(QBrush(QColor("gray")))
-        self.setFlag(self.ItemIsSelectable)
-        self.setAcceptHoverEvents(True)
-        self.setCursor(Qt.PointingHandCursor)
+class SwitchItem(ComponentItem):
 
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        self.toggle()
-        super().mousePressEvent(event)
+    def __init__(self, componentVM, radius=20, parent=None):
+        super().__init__(componentVM=componentVM)
+        self.radius = radius
+        self.on = False 
 
-    def toggle(self):
-        self.state = not self.state
-        color = "green" if self.state else "gray"
-        self.setBrush(QBrush(QColor(color)))
+    def boundingRect(self) -> QRectF:
+        return QRectF(-self.radius, -self.radius, 2*self.radius, 2*self.radius)
 
-    def isOn(self):
-        return self.state
+    def paint(self, painter: QPainter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        color = QColor("green") if self.on else QColor("red")
+        brush = QBrush(color)
+        painter.setBrush(brush)
+
+        pen = QPen(QColor("black"))
+        pen.setWidth(2)
+        painter.setPen(pen)
+
+        painter.drawEllipse(self.boundingRect())
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.on = not self.on
+            self.update() 
+            event.accept()
+        else:
+            event.ignore()

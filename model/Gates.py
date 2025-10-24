@@ -18,7 +18,7 @@ class OrGate(LogicGate):
 
 class XorGate(LogicGate):
     
-    def __init__(self, numInputs, numOutputs = 1):
+    def __init__(self):
         super().__init__(numInputs = 2)
     
     def getOutput(self):
