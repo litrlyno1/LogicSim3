@@ -8,11 +8,8 @@ class Pin(Propagator):
         self.gate = gate
 
 class InputPin(Pin, ISingleConnectable):
-    def __init__(self, gate, index):
+    def __init__(self, gate):
         super().__init__(gate)
-        if not (0 <= index < gate._numInputs):
-            raise IndexError("Wrong index when initializing ")
-        self.index = index
         self._connection = None
         self.type = "input"
         self.attach(self.gate)
@@ -37,11 +34,8 @@ class InputPin(Pin, ISingleConnectable):
         self.update()
 
 class OutputPin(Pin, IMultiConnectable):
-    def __init__(self, gate, index : int):
+    def __init__(self, gate):
         super().__init__(gate)
-        if not (0 <= index < gate._numOutputs):
-            raise IndexError("Wrong index when initializing ")
-        self.index = index
         self._connections: list[Connection] = []
         self.type = "output"
 
