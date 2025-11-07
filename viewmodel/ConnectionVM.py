@@ -1,38 +1,47 @@
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, Slot
+import weakref
 
-from model.Pin import Connection
-from viewmodel import LogicGateVM
 from core.idGenerator import generateId
-from viewmodel.ModelObserver import ModelObserver
+from model.Pin import Connection
+from viewmodel.PropagatorObject import PropagatorObject
+from viewmodel.PinVM import PinVM
+from viewmodel.CircuitComponentVM import CircuitComponentVM
 
-class ConnectionVM(QObject):
-    modelUpdated = Signal(object)
+class ConnectionVM(PropagatorObject):
+    type = "ConnectionVM"
     
-    def __init__(self, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
-        self._connection = Connection.create(gate1.component.getPin(type = type1, index = index1), gate2.component.getPin(type = type2, index = index2))
-        self._gate1 = gate1
-        self._gate2 = gate2
-        self._type1 = type1
-        self._type2 = type2
-        self._index1 = index1
-        self._index2 = index2
+    def __init__(self, pinVM1 : PinVM, pinVM2 : PinVM):
+        self._pinVM1 = pinVM1
+        self._pinVM2 = pinVM2
+        self._connection = Connection.create(pinVM1.pin, pinVM2.pin)
         self._id = generateId(prefix = "Connection")
-        self._modelObserver = ModelObserver(self, self._connection)
+        super().__init__(id = self._id, propagator= self._connection)
     
-    def getConnection(self):
-        return self._connection
+    @staticmethod
+    def canConnect(pinVM1 : PinVM, pinVM2 : PinVM):
+        return Connection.canConnect(pinVM1.pin, pinVM2.pin)
     
-    def getGate1(self):
-        return self._gate1
+    def connect(self):
+        self._connection.connect()
     
-    def getGate2(self):
-        return self._gate2
+    def disconnect(self):
+        self._connection.disconnect()
     
-    def getIndex1(self):
-        return self._index1
+    @property
+    def id(self):
+        return self._id
     
-    def getIndex2(self):
-        return self._index2
+    @property
+    def pinId1(self):
+        return self._pinVM1.id
     
-    def onModelUpdate(self):
-        self.modelUpdated.emit(self)
+    @property
+    def pinId2(self):
+        return self._pinVM2.id
+    
+    @property
+    def pinIds(self):
+        return self.pinId1, self.pinId2
+
+    def isConnectedToCircuitComponent(self, circuitComponent : CircuitComponentVM) -> bool:
+        return self._pinVM1 in circuitComponent.inputPins + circuitComponent.outputPins or self._pinVM2 in circuitComponent.inputPins + circuitComponent.outputPins

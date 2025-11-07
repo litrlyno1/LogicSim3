@@ -1,11 +1,16 @@
-from PySide6.QtCore import QObject, QPointF
+from viewmodel.CircuitComponentVM import CircuitComponentVM
+from viewmodel.Clickable import Clickable
 
-from viewmodel.ComponentVM import ComponentVM
-from model.Switch import Switch
+from PySide6.QtCore import QPointF
 
-class SwitchVM(ComponentVM):
-    type = "switch"
+class SwitchVM(CircuitComponentVM, Clickable):
+    type = "SwitchVM"
     
-    def __init__(self, pos: QPointF = QPointF(0,0)):
-        super().__init__(component = Switch(), pos = pos)
-        self._pos = pos
+    def __init__(self, circuitComponent : "Bulb", pos):
+        super().__init__(circuitComponent, pos)
+    
+    def toggle(self):
+        self._component.toggle()
+
+    def onClick(self):
+        self.toggle()

@@ -1,16 +1,21 @@
+from abc import ABC, abstractmethod
 from model.Observer import Observer, Observable
-from model.Interfaces import ISignalSource
 
-#propagator class is used to mark components, which can both receive and transmit a signal
-class Propagator(Observer, Observable, ISignalSource):
+class Propagator(Observer, Observable, ABC):
+    
+    def __init__(self):
+        super().__init__()
+        self._value = False
+    
+    @property
+    def value(self):
+        return self._value
+    
     def update(self):
-        #print(self.type)
-        print("Update called in model")
-        print(f"Caller {self}")
-        if hasattr(self, 'gate'):
-            print(f"with logicGate {self.gate}")
-        print(f"observers {self._observers}")
+        #print(f"Propagation, object: {self}")
+        self._evaluate()
         self.notify()
     
-    def getOutput(self):
-        ...
+    @abstractmethod
+    def _evaluate(self):
+        pass

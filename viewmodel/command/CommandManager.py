@@ -1,5 +1,5 @@
 from viewmodel.command.base import Command
-from viewmodel.command.registry import CommandRegistry
+from viewmodel.command.CommandFactory import CommandFactory
 
 from viewmodel.CanvasVM import CanvasVM
 
@@ -15,9 +15,10 @@ class CommandManager:
         self._canvasVM = canvasVM
     
     def do(self, command: Command):
-        command.execute()
-        self._executedStack.append(command)
-        self._undoneStack.clear()
+        if command: #if not None
+            command.execute()
+            self._executedStack.append(command)
+            self._undoneStack.clear()
 
     def undo(self):
         if self._executedStack:
@@ -32,8 +33,5 @@ class CommandManager:
             self._executedStack.append(cmd)
     
     def createCommand(self, commandType : str, **kwargs):
-        #print(**kwargs)
-        command = CommandRegistry.getCommand(commandType)(canvasVM = self._canvasVM, **kwargs)
-        print("Command created: ")
-        #print(command.__dict__)
+        command = CommandFactory.createCommand(commandType, canvasVM = self._canvasVM, **kwargs)
         self.do(command)

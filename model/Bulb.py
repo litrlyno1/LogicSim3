@@ -1,8 +1,13 @@
-from model.Propagator import Propagator
-from model.Component import Component
+from typing import Literal
+from model.CircuitComponent import CircuitComponent
 
-class Bulb(Component, Propagator):
+class Bulb(CircuitComponent):
     type = "Bulb"
+    numInputs = 1
+    numOutputs = 0
     
-    def getOutput(self):
-        return self._value
+    def __init__(self):
+        super().__init__()
+    
+    def _evaluate(self):
+        self._value = self._inputPins[0].value

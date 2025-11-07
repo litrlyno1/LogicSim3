@@ -38,7 +38,7 @@ class ConnectionItem(QGraphicsPathItem):
     
     @staticmethod
     def isViablePinPair(pin1 : PinItem, pin2 : PinItem) -> bool:
-        if pin1.getParentGate() == pin2.getParentGate():
+        if pin1.getParentComponent() == pin2.getParentComponent():
             print("Pin pair not viable: same parent gate")
             return False
         elif pin1.getType == pin2.getType:

@@ -1,29 +1,21 @@
-from PySide6.QtCore import QObject, Signal, QPointF
+from PySide6.QtCore import QObject, QPointF, Signal
 
-from model import Component
 from core.idGenerator import generateId
+from model.Component import Component
 
-class ComponentVM(QObject):
-    posChanged = Signal(str, QPointF)
+from viewmodel.Movable import Movable
+
+class ComponentVM(Movable):
     
-    def __init__(self, component : Component, pos : QPointF):
-        super().__init__()
+    def __init__(self, component : Component, pos : QPointF, **kwargs):
         self._component = component
-        self._id = generateId(prefix= self.__class__.type)
-        self._pos = pos
+        self._id = generateId(prefix = self.type)
+        super().__init__(id = self._id, pos = pos, **kwargs)
     
-    @property 
-    def component(self):
-        return self._component
-
     @property
-    def pos(self):
-        return self._pos
-    
+    def type(self):
+        return self._component.type
+
     @property
     def id(self):
         return self._id
-    
-    def setPos(self, pos : QPointF) -> None:
-        self._pos = pos
-        self.posChanged.emit(self._id, pos)

@@ -1,43 +1,74 @@
 from PySide6.QtCore import Signal, Slot, QObject, QPointF
-from typing import List
+from typing import Dict
 
-from viewmodel.LogicGateVM import LogicGateVM
 from viewmodel.ConnectionVM import ConnectionVM
+from viewmodel.CircuitComponentVM import CircuitComponentVM
 from viewmodel.ComponentVM import ComponentVM
 
 class CanvasVM(QObject):
-    componentAdded = Signal(ComponentVM)
-    componentRemoved = Signal(ComponentVM)
+    componentAdded = Signal(str, str, QPointF)
+    #id, type, pos
+    circuitComponentAdded = Signal(str, str, QPointF, list, list)
+    #id, type, pos, list[inputPins], list[outputPins]
+    componentRemoved = Signal(str)
+    #id
     componentPosUpdated = Signal(str, QPointF)
-    connectionAdded = Signal(object)
-    connectionRemoved = Signal(ConnectionVM)
+    #id, pos
+    connectionAdded = Signal(str, tuple)
+    #id, pin1_id, pin2_id
+    connectionRemoved = Signal(str)
+    #id
+    componentValueUpdated = Signal(str, bool)
+    #id, value
+    connectionValueUpdated = Signal(str, bool)
+    #id, value
     
     def __init__(self):
         super().__init__()
-        self._components: List[ComponentVM] = []
-        self._connections: List[ConnectionVM] = []
+        self._components : Dict[str, ComponentVM] = dict()
+        self._connections : Dict[str, ConnectionVM] = dict()
     
-    def getComponents(self) -> List[ComponentVM]:
-        return self._components
-
-    def removeComponent(self, component : ComponentVM) -> None:
-        self._components.remove(component)
-        self.componentRemoved.emit(component)
+    def addComponent(self, component : ComponentVM):
+        self._components[component.id] = component
+        component.posChanged.connect(lambda id, pos: self.componentPosUpdated.emit(id, pos))
+        if isinstance(component, CircuitComponentVM):
+            component.valueChanged.connect(lambda id, value: self.componentValueUpdated.emit(id, value))
+            self.circuitComponentAdded.emit(component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds)
+            print(f"CanvasVM : emitting circuit component added signal with {component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds}")
+        else:
+            self.componentAdded.emit(component.id, component.type, component.pos)
+            print(f"CanvasVM : emitting component added signal with {component.id, component.type, component.pos}")
+        print(f"Current length of componentList: {len(self._components)}")
     
-    def addComponent(self, component : ComponentVM) -> None:
-        self._components.append(component)
-        print(component)
-        component.posChanged.connect(self.componentPosChanged)
-        self.componentAdded.emit(component)
+    def removeComponent(self, component : ComponentVM):
+        self._components.pop(component.id)
+        component.posChanged.disconnect()
+        if isinstance(component, CircuitComponentVM):
+            component.valueChanged.disconnect()
+        self.componentRemoved.emit(component.id)
+        print(f"CanvasVM : emitting component removed signal with {component.id}")
+        print(f"Current length of componentList: {len(self._components)}")
     
     def addConnection(self, connection : ConnectionVM):
-        self._connections.append(connection)
-        self.connectionAdded.emit(connection)
-        
-    def removeConnection(self, connection : ConnectionVM):
-        self._connections.append(connection)
-        self.connectionRemoved.emit(connection)
+        self._connections[connection.id] = connection
+        connection.connect()
+        connection.valueChanged.connect(lambda id, value : self.connectionValueUpdated.emit(id, value))
+        self.connectionAdded.emit(connection.id, connection.pinIds)
+        print(f"CanvasVM : emitting connection added signal with {connection.id, connection.pinIds}")
+        print(f"Current length of connectionList: {len(self._connections)}")
     
-    @Slot(str, QPointF)
-    def componentPosChanged(self, id : str, pos : QPointF) -> None:
-        self.componentPosUpdated.emit(id, pos)
+    def removeConnection(self, connection : ConnectionVM):
+        connection.disconnect()
+        connection.valueChanged.disconnect()
+        self._connections.pop(connection.id)
+        self.connectionRemoved.emit(connection.id)
+        print(f"CanvasVM : emitting connection removed signal with {connection.id}")
+        print(f"Current length of connectionList: {len(self._connections)}")
+    
+    @property
+    def components(self):
+        return self._components
+    
+    @property
+    def connections(self):
+        return self._connections

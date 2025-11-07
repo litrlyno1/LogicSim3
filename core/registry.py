@@ -9,9 +9,11 @@ class ComponentRegistry:
         
         if cls._registry is None:
             componentModule = importlib.import_module("model.Component")
+            circuitComponentModule = importlib.import_module("model.CircuitComponent")
             logicGateModule = importlib.import_module("model.LogicGate")
             Component = getattr(componentModule, "Component")
             LogicGate = getattr(logicGateModule, "LogicGate")
+            CircuitComponent = getattr(circuitComponentModule, "CircuitComponent")
 
             cls._registry = {}
             for module_name in modules:
@@ -21,6 +23,7 @@ class ComponentRegistry:
                         inspect.isclass(obj)
                         and issubclass(obj, Component)
                         and obj is not Component
+                        and obj is not CircuitComponent
                         and obj is not LogicGate
                     ):
                         cls._registry[name] = obj
@@ -32,6 +35,6 @@ class ComponentRegistry:
         return list(cls._loadComponents().keys())
     
     @classmethod
-    def getComponent(cls, name : str):
+    def getComponent(cls, type : str):
         registry = cls._loadComponents()
-        return registry[name]
+        return registry[type]

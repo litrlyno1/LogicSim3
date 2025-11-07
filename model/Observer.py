@@ -3,7 +3,7 @@ from typing import List
 
 class Observer(ABC):
     @abstractmethod
-    def update(self) -> None:
+    def update(self, **kwargs) -> None:
         ...
 
 class Observable:
@@ -19,6 +19,6 @@ class Observable:
         if observer in self._observers:
             self._observers.remove(observer)
     
-    def notify(self):
+    def notify(self, **kwargs):
         for observer in self._observers:
-            observer.update()
+            observer.update(**kwargs)

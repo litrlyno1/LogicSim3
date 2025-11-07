@@ -12,23 +12,11 @@ from view.PinItem import PinItem
 from view.ConnectionItem import ConnectionItem
 
 from viewmodel.CanvasVM import CanvasVM
-from viewmodel.LogicGateVM import LogicGateVM
 from viewmodel.ConnectionVM import ConnectionVM
-from viewmodel.SwitchVM import SwitchVM
 
 from typing import List
 
-# temporary dictionaries
-from viewmodel.ComponentVM import ComponentVM
-from viewmodel.BulbVM import BulbVM
-# 
-
-vm_view = {
-    ComponentVM: ComponentItem,
-    LogicGateVM: GateItem,
-    BulbVM: BulbItem,
-    SwitchVM : SwitchItem
-}
+from viewmodel.CircuitComponentVM import ComponentVM
 
 class Canvas(QGraphicsView):
     itemDropped = Signal(str, QPointF)
@@ -68,8 +56,8 @@ class Canvas(QGraphicsView):
         self.itemDropped.connect(lambda componentType, pos: self._eventBus.emit(eventName = "ItemDropped", componentType = componentType, pos = pos))
         self.itemMoved.connect(lambda item, pos: self._eventBus.emit(eventName = "ItemMoved", component = item.componentVM, pos = pos))
         self.connectionCreated.connect(lambda pin1, pin2: self._eventBus.emit(eventName = "ConnectionCreated", 
-                                                                                gate1 = pin1.getParentGate().componentItem.componentVM, type1 = pin1.getType(), index1 = pin1.getIndex(),
-                                                                                gate2 = pin2.getParentGate().componentItem.componentVM, type2 = pin2.getType(), index2 = pin2.getIndex()))
+                                                                                gate1 = pin1.getParentComponent().componentVM, type1 = pin1.getType(), index1 = pin1.getIndex(),
+                                                                                gate2 = pin2.getParentComponent().componentVM, type2 = pin2.getType(), index2 = pin2.getIndex()))
     
     def _setupGraphics(self) -> None:
         self._scene = QGraphicsScene(self)

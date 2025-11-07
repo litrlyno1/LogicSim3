@@ -1,94 +1,126 @@
 from __future__ import annotations
+from typing import Optional, Tuple, List
+from abc import ABC, abstractmethod
+import weakref
+
 from model.Propagator import Propagator
-from model.Interfaces import ISingleConnectable, IMultiConnectable
 
-class Pin(Propagator):
-    def __init__(self, gate: "LogicGate"):
+class Pin(Propagator, ABC):
+    def __init__(self, parent : "CircuitComponent"):
         super().__init__()
-        self.gate = gate
-
-class InputPin(Pin, ISingleConnectable):
-    def __init__(self, gate):
-        super().__init__(gate)
-        self._connection = None
-        self.type = "input"
-        self.attach(self.gate)
+        self._parent = weakref.ref(parent)
     
     @property
-    def connection(self):
-        return self._connection
-    
-    def getOutput(self):
-        if self._connection is not None and self._connection.getOutput() is None:
-            raise ValueError("Input pin expected output from connection, got None instead")
-        return self._connection.getOutput() or False
+    def parent(self) -> "CircuitComponent":
+        return self._parent
 
-    def connect(self, conn : Connection):
+    @property
+    @abstractmethod
+    def type(self) -> str:
+        pass
+
+class InputPin(Pin):
+    type = "InputPin"
+    
+    def __init__(self, parent : "CircuitComponent"):
+        super().__init__(parent)
+        self.attach(parent)
+        self._connection = None
+    
+    @property
+    def connection(self) -> Optional[Connection]:
+        return self._connection
+
+    def connect(self, conn : Connection) -> None:
         self._connection = conn
         self._connection.attach(self)
         self.update()
     
-    def disconnect(self):
+    def disconnect(self) -> None:
+        if self._connection:
+            self._connection.detach(self)
         self._connection = None
-        self._connection.detach(self)
         self.update()
+    
+    def _evaluate(self) -> None:
+        self._value = self._connection.value if self._connection else False
 
-class OutputPin(Pin, IMultiConnectable):
-    def __init__(self, gate):
-        super().__init__(gate)
-        self._connections: list[Connection] = []
-        self.type = "output"
+class OutputPin(Pin):
+    type = "OutputPin"
+    
+    def __init__(self, parent : "CircuitComponent"):
+        super().__init__(parent)
+        parent.attach(self)
+        self._connections: List[Connection] = []
 
     @property
-    def connections(self):
+    def connections(self) -> List[Connection]:
         return self._connections
-
-    def getOutput(self):
-        if self.gate.getOutput() is None:
-            raise ValueError("Output pin expected output from gate, got None instead")
-        return self.gate.getOutput()
     
-    def connect(self, conn: Connection):
+    def connect(self, conn: Connection) -> None:
         self._connections.append(conn)
         self.attach(conn)
     
-    def disconnect(self, conn: Connection):
-        self._connections.remove(conn)
+    def disconnect(self, conn: Connection) -> None:
         self.detach(conn)
+        self._connections.remove(conn)
+    
+    def _evaluate(self) -> None:
+        self._value = self._parent().value
 
 #connection is an additional layer for pins interacting with each other
 class Connection(Propagator):
+    type = "Connection"
+    
     def __init__(self, source : Pin = None, target : Pin = None):
         super().__init__()
-        self._source = source
-        self._target = target
-        self.type = "Connection"
+        self._source = weakref.ref(source)
+        self._target = weakref.ref(target)
+        print(self._source())
+        print(self._target())
+        self.connect()
     
-    def getOutput(self):
-        return self._source.getOutput()
+    def _evaluate(self) -> None:
+        self._value = self._source().value
+    
+    def connect(self):
+        self._source().connect(self)
+        self.update()
+        self._target().connect(self)
+    
+    def disconnect(self):
+        self._source().disconnect(self)
+        self.update()
+        self._target().disconnect()
     
     @classmethod 
-    def create(cls, pin1: Pin, pin2: Pin):
-        if cls.isValidPair(pin1, pin2):
-            if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
-                sourcePin = pin2
-                targetPin = pin1
-            elif isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
-                sourcePin = pin1
-                targetPin = pin2
-            
-            print("Connection: creating...")
-            print(f"pin1 : {pin1.__dict__}")
-            print(f"pin2 : {pin2.__dict__}")
-            conn = Connection(source = sourcePin, target = targetPin)
-            sourcePin.connect(conn)
-            targetPin.connect(conn)
-            
-            return conn
+    def create(cls, pin1: Pin, pin2: Pin) -> Optional[Connection]:
+        if Connection.canConnect(pin1, pin2):
+            sourcePin, targetPin = Connection._order(pin1, pin2)
+            connection = cls(sourcePin, targetPin)
+            return connection
+        else: 
+            print("Model: Connection impossible to create")
+            return None
     
     @staticmethod
-    def isValidPair(pin1: Pin, pin2: Pin) -> bool:
-        if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin) or isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
-            return True
-        else:
-            return False
+    def _order(pin1 : Pin, pin2 : Pin) -> Tuple[OutputPin, InputPin]:
+        if isinstance(pin1, InputPin) and isinstance(pin2, OutputPin):
+            sourcePin = pin2
+            targetPin = pin1
+        elif isinstance(pin2, InputPin) and isinstance(pin1, OutputPin):
+            sourcePin = pin1
+            targetPin = pin2
+        return sourcePin, targetPin
+
+    @staticmethod
+    def _createsCycle(sourcePin : OutputPin, targetPin : InputPin) -> bool:
+        return targetPin.parent().precedes(sourcePin.parent())
+    
+    @staticmethod
+    def canConnect(pin1 : Pin, pin2 : Pin) -> bool:
+        if not pin1.parent == pin2.parent and not pin1.type == pin2.type:
+            sourcePin, targetPin = Connection._order(pin1, pin2)
+            if not Connection._createsCycle(sourcePin, targetPin):
+                return True
+        return False

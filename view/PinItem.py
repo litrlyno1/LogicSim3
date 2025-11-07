@@ -3,27 +3,34 @@ from PySide6.QtCore import Qt, QPointF, Signal, QObject, Slot
 from PySide6.QtGui import QPen
 from view.settings.PinItem import PinItemSettings
 
-class PinItemSignals(QObject):
-    mousePressed = Signal(object)
+from abc import ABC, abstractmethod
 
-class PinItem(QGraphicsEllipseItem):
+class PinItem(QGraphicsEllipseItem, ABC):
+    
+    @property
+    @abstractmethod
+    def type() -> str:
+        pass
+    
+    @abstractmethod
+    def relX(width: float) -> QPointF:
+        pass
+    
+    @abstractmethod
+    def relY(height: float) -> QPointF:
+        pass
 
-    def __init__(self, parentComponent : "ComponentItem", type : str, index : int, settings : PinItemSettings = PinItemSettings.default()):
-        self._parentComponent = parentComponent
-        self._type = type
-        self._index = index
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, relativePos : QPointF, settings : PinItemSettings = PinItemSettings.default()):
         self._importSettings(settings)
         super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2)
-        self.setParentItem(parentComponent)
-        self.signals = PinItemSignals()
-        
-        self._setupGraphics()
+        self._id = id
+        self.setParentItem(parentItem)
+        self._setupGraphics(relativePos)
         self.setFlags(
             QGraphicsEllipseItem.ItemIsSelectable |
             QGraphicsEllipseItem.ItemSendsGeometryChanges
         )
         self._isParentSelected = self._parentComponent.isSelected()
-        self._connectionItems = []
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
@@ -33,8 +40,8 @@ class PinItem(QGraphicsEllipseItem):
         self._borderColor = settings.BORDER_COLOR
         self._borderWidth = settings.BORDER_WIDTH
     
-    def _setupGraphics(self):
-        self.setPos(QPointF(self._getRelX(), self._getRelY()))
+    def _setupGraphics(self, relativePos : QPointF):
+        self.setPos(relativePos)
         #print(self.pos().y())
         self.setBrush(self._color)
         self.setPen(QPen(self._borderColor, self._borderWidth))
@@ -42,18 +49,9 @@ class PinItem(QGraphicsEllipseItem):
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
-    def getparentComponent(self):
-        return self._parentComponent
-    
-    def getType(self):
-        return self._type
-    
-    def getIndex(self):
-        return self._index
-    
     @property 
-    def isParentSelected(self):
-        return self._isParentSelected
+    def selected(self):
+        return self._selected
     
     @isParentSelected.setter
     def isParentSelected(self, value : bool):
@@ -91,21 +89,39 @@ class PinItem(QGraphicsEllipseItem):
         if change == QGraphicsItem.ItemPositionChange:
             print("PinItem : Position change")
         return super().itemChange(change, value)
+
+    @staticmethod
+    def relY(index: int, pinsNum : int, height: float):
+            verticalStep = height / (pinsNum+1)
+            y = (index+1)*verticalStep
+            return y-height/2
+
+    @staticmethod
+    def _inputPinRelX(width):
+        return -width/2
+
+    @staticmethod
+    def _outputPinRelX(width):
+        return width/2
+
+class InputPinItem(PinItem):
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, settings : PinItemSettings = PinItemSettings.default()):
+        super().__init__(parentItem, id)
+
+    def relX(width: float) -> float:
+        return -width/2
     
-    def _getRelX(self):
-        width = self._parentComponent.getWidth()
-        if self._type == "output":
-            return width/2
-        else:
-            return -width/2
-    
-    def _getRelY(self):
-        height = self._parentComponent.getHeight()
-        if self._type == "output":
-            pinAmount = self._parentComponent.componentVM.component.getNumOutputs()
-        else:
-            pinAmount = self._parentComponent.componentVM.component.getNumInputs()
+    def relY(height: float) -> float:
         
-        step = height / (pinAmount+1)
+
+class OutputPinItem(PinItem):
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, index: int, settings : PinItemSettings = PinItemSettings.default()):
+        super().__init__(parentItem, id)
+    
+    def relX(width: float) -> float:
+        return width/2
+    
+    def relY(height: float, pinNum: int) -> float:
+        step = height / (pinNum+1)
         y = (self._index+1)*step
-        return y - height/2
+        return y - self.height/2

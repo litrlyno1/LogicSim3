@@ -11,7 +11,6 @@ class GateItem(ComponentItem):
     def __init__(self, logicGateVM: LogicGateVM, settings: GateItemSettings = GateItemSettings.default()):
         super().__init__(logicGateVM)
         self._importSettings(settings)
-        self.initPinItems()
 
         self.setPos(self._componentVM.pos)
         self.setFlags(
@@ -23,6 +22,7 @@ class GateItem(ComponentItem):
         self.setZValue(1)
         
         self._dragStartPos = None  #for movement tracking
+        self.initPinItems()
 
     def _importSettings(self, settings: GateItemSettings):
         size = settings.SIZE

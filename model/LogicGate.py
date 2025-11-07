@@ -1,9 +1,7 @@
 from __future__ import annotations
-from model.Propagator import Propagator
-from model.Component import Component
-from model.HasPins import HasPins
+from model.CircuitComponent import CircuitComponent
 
-class LogicGate(Component, HasPins, Propagator):
-
-    def __init__(self, numInputs: int, numOutputs: int):
-        super().__init__(numInputs, numOutputs)
+class LogicGate(CircuitComponent):
+    
+    def __init__(self):
+        super().__init__()

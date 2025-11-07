@@ -1,115 +1,131 @@
+from typing import List, Set
+import weakref
+
 from PySide6.QtCore import QPointF
 
 from viewmodel.command.base import Command
 from viewmodel.CanvasVM import CanvasVM
+from viewmodel.CircuitComponentVM import CircuitComponentVM
 from viewmodel.ComponentVM import ComponentVM
-from viewmodel.LogicGateVM import LogicGateVM
-from viewmodel.BulbVM import BulbVM
-from viewmodel.SwitchVM import SwitchVM
 from viewmodel.ConnectionVM import ConnectionVM
+from viewmodel.ComponentVMFactory import ComponentVMFactory
+from viewmodel.PinVM import PinVM
 
-# temporary dictionary
-text_vm = {
-    "Switch" : SwitchVM,
-    "Bulb" : BulbVM,
-    "AndGate" : LogicGateVM,
-    "OrGate" : LogicGateVM,
-    "XorGate" : LogicGateVM,
-    "NandGate" : LogicGateVM,
-    "NotGate" : LogicGateVM
-}
-
-class AddComponent(Command):
-    def __init__(self, canvasVM : CanvasVM, componentType : str, pos : QPointF):
+class AddComponents(Command):
+    def __init__(self, canvasVM : CanvasVM, componentTypeList : List[str], posList: List[QPointF]):
         super().__init__()
-        print(f"Component type: {componentType}")
-        print(f"pos: {pos}")
         self._canvas = canvasVM
-        componentClass = text_vm[componentType]
-        print(f"Add Component command: retrieved class {componentClass}")
-        if componentClass == LogicGateVM:
-            self._component = LogicGateVM(componentType, pos)
-        else:
-            self._component = componentClass(pos)
-        print(f"Add Component command: created component {self._component}")
-        print(self._component)
-        self._pos = pos
+        self._components : List[ComponentVM] = list()
+        for index in range(len(componentTypeList)):
+            self._components.append(ComponentVMFactory.createComponent(type = componentTypeList[index], pos = posList[index]))
     
     @property
     def component(self):
         return self._component
-    
-    def getCanvas(self):
-        return self._canvas
     
     def execute(self):
-        self._canvas.addComponent(self._component)
+        for component in self._components:
+            self._canvas.addComponent(component = component)
     
     def undo(self):
-        self._canvas.removeComponent(self._component)
+        for component in self._components:
+            self._canvas.removeComponent(component)
 
-class MoveComponent(Command):
-    def __init__(self, canvasVM : CanvasVM, component : ComponentVM, oldPos : QPointF, newPos : QPointF):
+class MoveComponents(Command):
+    def __init__(self, canvasVM : CanvasVM, components : List[ComponentVM], oldPosList : List[QPointF], newPosList : List[QPointF]):
         super().__init__()
         self._canvas = canvasVM
-        self._component = component
-        self._oldPos = oldPos
-        self._newPos = newPos
+        self._components = components
+        self._oldPosList = oldPosList
+        self._newPosList = newPosList
     
     @property
-    def component(self):
-        return self._component
+    def components(self):
+        return self._components
     
     @property
-    def oldPos(self):
-        return self._oldPos
+    def oldPosList(self):
+        return self._oldPosList
     
     @property
-    def newPos(self):
-        return self._newPos
+    def newPosList(self):
+        return self._newPosList
     
     def execute(self):
-        self._component.setPos(self._newPos)
+        for index in range(len(self._components)):
+            self._components[index].pos = self._newPosList[index]
     
     def undo(self):
-        self._component.setPos(self._oldPos)
+        for index in range(len(self._components)):
+            self._components[index].pos = self._oldPosList[index]
 
-class RemoveComponent(Command):
-    def __init__(self, canvasVM : CanvasVM, component : ComponentVM):
+class RemoveComponents(Command):
+    def __init__(self, canvasVM : CanvasVM, componentIds : List[str]):
         super().__init__()
         self._canvas = canvasVM
-        self._component = component
+        self._componentsIds = componentIds
+        self._components : List[ComponentVM] = list()
+        self._adjacentConnections : List[Set[ConnectionVM]] = list()
+        for id in self._componentsIds:
+            component = self._canvas.components[id]
+            self._components.append(component)
+            if isinstance(component, CircuitComponentVM):
+                adjacent = set()
+                for id in self._canvas.connections:
+                    connection = self._canvas.connections[id]
+                    if connection.isConnectedToCircuitComponent(component):
+                        adjacent.add(connection)
+                self._adjacentConnections.append(adjacent)
+            else:
+                self._adjacentConnections.append([])
     
     @property
-    def component(self):
-        return self._component
+    def components(self):
+        return self._components
     
     @property
     def canvas(self):
         return self._canvas
     
     def execute(self):
-        self._canvas.removeComponent(self._component)
+        for connectionSet in self._adjacentConnections:
+            for connection in connectionSet:
+                self._canvas.removeConnection(connection)
+        for component in self._components:
+            self._canvas.removeComponent(component)
     
     def undo(self):
-        self._canvas.addComponent(self._component)
+        for component in self._components:
+            self._canvas.addComponent(component)
+        for connectionSet in self._adjacentConnections:
+            for connection in connectionSet:
+                self._canvas.addConnection(connection)
 
 class CreateConnection(Command):
-    def __init__(self, canvasVM : CanvasVM, gate1 : LogicGateVM, type1 : str, index1 : int, gate2 : LogicGateVM, type2 : str, index2 : int):
+    def __init__(self, canvasVM : CanvasVM, pinVM1 : PinVM, pinVM2 : PinVM):
         self._canvas = canvasVM
-        print("Command: creating connection")
-        print(f"gate (model): {gate1.component}")
-        print(f"gate2 (model): {gate2.component}")
-        self._connection = ConnectionVM(gate1, type1, index1, gate2, type2, index2)
-    
-    def getConnection(self):
-        return self._connection
-    
-    def getCanvas(self):
-        return self._canvas
+        self._pinVM1 = weakref.ref(pinVM1)
+        self._pinVM2 = weakref.ref(pinVM2)
     
     def execute(self):
+        self._connection = ConnectionVM(self._pinVM1(), self._pinVM2())
         self._canvas.addConnection(self._connection)
     
     def undo(self):
         self._canvas.removeConnection(self._connection)
+
+class RemoveConnections(Command):
+    def __init__(self, canvasVM : CanvasVM, connectionIds : List[str]):
+        self._canvas = canvasVM
+        self._connectionIds = connectionIds
+        self._connections = list()
+        for id in self._connectionIds:
+            self._connections.append(self._canvas.connections[id])
+    
+    def execute(self):
+        for connection in self._connections:
+            self._canvas.removeConnection(connection)
+    
+    def undo(self):
+        for connection in self._connections:
+            self._canvas.addConnection(connection)

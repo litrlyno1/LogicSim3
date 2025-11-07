@@ -1,16 +1,17 @@
-from model.Interfaces import IToggleable
-from model.Observer import Observable
-from model.Component import Component
+from typing import Literal
+from model.CircuitComponent import CircuitComponent
 
-class Switch(Component, Observable, IToggleable):
+class Switch(CircuitComponent):
     type = "Switch"
+    numInputs = 0
+    numOutputs = 1
     
     def __init__(self):
-        self._value = False
+        super().__init__()
     
     def toggle(self):
         self._value = not self._value
         self.update()
     
-    def getOutput(self):
-        return self._value
+    def _evaluate(self):
+        pass
