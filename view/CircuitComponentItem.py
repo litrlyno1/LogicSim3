@@ -1,91 +1,66 @@
-from PySide6.QtWidgets import QGraphicsItem
-from PySide6.QtCore import Qt, Signal, QPointF, QObject
+from typing import List, Dict
+from PySide6.QtCore import QPointF, Signal
 
-from view.PinItem import PinItem
-from viewmodel.CircuitComponentVM import CircuitComponentVM
 from view.ComponentItem import ComponentItem
-
-from typing import List
+from view.settings.CircuitComponentItem import CircuitComponentItemSettings
+from view.PinItem import InputPinItem, OutputPinItem
 
 class CircuitComponentItem(ComponentItem):
-    
-    def __init__(self, id : str, pos : QPointF, inputPinIds : List[str], outputPinIds : List[str]):
-        super().__init__(id = id, pos = pos)
-        self.setFlags(
-            QGraphicsItem.ItemIsSelectable |
-            QGraphicsItem.ItemIsMovable | # we don't set the flag selectable, because we implement our own logic
-            QGraphicsItem.ItemSendsGeometryChanges
-        )
-        self.setAcceptHoverEvents(True)
-        self.setZValue(1)
-        self.setAcceptedMouseButtons(Qt.LeftButton)
-    
-    @property
-    def height(self):
-        return self._rect.height()
+    pinSelected = Signal(str, bool)
 
-    @property
-    def width(self):
-        return self._rect.width()
+    def __init__(self, id : str, type : str, pos : QPointF, inputPinIds : List[str], outputPinIds : List[str], settings: CircuitComponentItemSettings = CircuitComponentItemSettings.default()):
+        super().__init__(id, type, pos, settings)
+        print(f"Initializing CircuitComponentItem with {self.width} width and {self.height} height")
+        self._initPinItems(inputPinIds, outputPinIds)
     
-    def initPinItems(self, inputPinIds : List[str], outputPinIds : List[str]):
-        self.initInputPins(inputPinIds)
-        self.initOutputPins(outputPinIds)
+    def _initPinItems(self, inputPinIds : List[str], outputPinIds : List[str]):
+        self._initInputPins(inputPinIds)
+        self._initOutputPins(outputPinIds)
     
-    def initInputPins(self, inputPinIds : List[str]):
+    def _initInputPins(self, inputPinIds : List[str]):
         self._numInputs = len(inputPinIds) 
-        self._inputPins = list()
-        
-        for index in range(len(inputPinIds)):
-            pinId = inputPinIds[index]
-            pinRelativePos = QPointF(_inputPinRelX(self.width), CircuitComponentItem._inputPinRelY(index, self._numInputs, ))
-            self._inputPins.append(PinItem(parentItem=self, id=pinId, relativePos=pinRelativePos))
+        self._inputPins : Dict[str, InputPinItem] = {}
+        for index in range(self._numInputs):
+            id = inputPinIds[index]
+            relativePos = self.inputPinPos(self.width, self.height, index, self._numInputs)
+            pinItem = InputPinItem(parentItem=self, id=id, relativePos=relativePos)
+            self._inputPins[inputPinIds[index]] = pinItem
     
-    def initOutputPins(self, outputPinIds : List[str]):
+    def _initOutputPins(self, outputPinIds : List[str]):
         self._numOutputs = len(outputPinIds)
-        self._outputPins = list()
-        
-        for index in range(len(outputPinIds)):
-            pinId = outputPinIds[index]
-            pinRelativePos = QPointF()
+        self._outputPins : Dict[str, OutputPinItem] = {}
+        for index in range(self._numOutputs):
+            id = outputPinIds[index]
+            relativePos = self.outputPinPos(self.width, self.height, index, self._numOutputs)
+            pinItem = OutputPinItem(parentItem=self, id=id, relativePos=relativePos)
+            self._outputPins[outputPinIds[index]] = pinItem
     
+    @property
+    def inputPinItems(self):
+        return self._inputPins
     
-    
-    def initOutputPins(self):
-        self._outputPins = []
-        for index in range(self._componentVM.component.numOutputs):
-            self._outputPins.append(PinItem(parentComponent=self, type = "output", index = index))
+    @property
+    def outputPinItems(self):
+        return self._outputPins
 
+    def inputPinPos(self, width: float, height: float, index: int, pinNum: int):
+        return QPointF(self.inputRelX(width, index, pinNum), self.inputRelY(height, index, pinNum))
     
-    def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedHasChanged:
-            print(f"Component selection : {value}")
-            self._brush = self._selectedColor if value else self._color
-            for pin in self._inputPins + self._outputPins:
-                pin.isParentSelected = value
-            self.update()
-        elif change == QGraphicsItem.ItemPositionChange:
-            self._signals.moved.emit(self, self.pos())
-        return super().itemChange(change, value)
-
-    def onItemMoved(self):
-        for pin in self._inputPins:
-            pin.onParentMoved()
-        for pin in self._outputPins:
-            pin.onParentMoved()
+    def inputRelX(self, width: float, index : int, pinNum : int) -> float:
+        return -width/2
     
-    def _getRelPinX(self, pinType : str):
-        if pinType == "output":
-            return self.width/2
-        else:
-            return -width/2
+    def inputRelY(self, height: float, index: int, pinNum : int) -> float:
+        step = height / (pinNum+1)
+        y = (index+1)*step
+        return y - height/2
     
-    def _getPinY(self):
-        if self._type == "output":
-            pinAmount = self._parentComponent.componentVM.component.numOutputs
-        else:
-            pinAmount = self._parentComponent.componentVM.component.numInputs
-        
-        step = self.height / (pinAmount+1)
-        y = (self._index+1)*step
-        return y - self.height/2
+    def outputPinPos(self, width: float, height: float, index: int, pinNum: int):
+        return QPointF(self.outputRelX(width, index, pinNum), self.outputRelY(height, index, pinNum))
+    
+    def outputRelX(self, width: float, index : int, pinNum : int) -> float:
+        return width/2
+    
+    def outputRelY(self, height: float, index : int, pinNum: int) -> float:
+        step = height / (pinNum+1)
+        y = (index+1)*step
+        return y - height/2

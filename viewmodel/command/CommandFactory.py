@@ -1,7 +1,7 @@
 from viewmodel.command.Commands import *
 
 commandRegistry = {
-    "AddComponent" : AddComponents,
+    "AddComponents" : AddComponents,
     "MoveComponents" : MoveComponents, 
     "CreateConnection" : CreateConnection,
     "RemoveComponents" : RemoveComponents,

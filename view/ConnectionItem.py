@@ -1,49 +1,69 @@
 from PySide6.QtGui import QPen, QPainterPath
-from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItem
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QGraphicsObject
+from PySide6.QtCore import Qt, QPointF, Signal
 
-from view import PinItem
+from view.PinItem import PinItem
+from view.settings.ConnectionItem import ConnectionItemSettings
 
-class ConnectionItem(QGraphicsPathItem):
-    def __init__(self, pinItem1 : PinItem, pinItem2 : PinItem):
-        super().__init__()
-        self._pinItem1 = pinItem1
-        self._pinItem2 = pinItem2
-        self._addToPins()
+class ConnectionItem(QGraphicsObject):
+    selected = Signal(str)
+    removed = Signal(str)
+    valueChanged = Signal(str)
+    
+    class CubicPath(QGraphicsPathItem):
         
-        pen = QPen(Qt.black, 3)
-        pen.setCapStyle(Qt.RoundCap)
-        self.setPen(pen)
-
-        self.update_path()
+        def __init__(self, start: QPointF, end: QPointF, settings: ConnectionItemSettings = ConnectionItemSettings.default()):
+            super().__init__()
+            self._start = start
+            self._end = end
+            self._importSettings(settings)
+        
+        def _importSettings(self, settings: ConnectionItemSettings):
+            self._color = settings.COLOR
+            self._onColor = settings.ON_COLOR
+            self._selectedHighlightColor = settings.SELECTED_HIGHLIGHT_COLOR
+            self._width = settings.WIDTH
+        
+        def _setupGraphics(self):
+            pen = QPen(self._color, self._width)
+            pen.setCapStyle(Qt.RoundCap)
+            self.setPen(pen)
+            self.update()
+        
+        @property
+        def start(self):
+            return self._start
+        
+        @start.setter
+        def start(self, newStart: QPointF):
+            self._start = newStart
+            self.update()
+        
+        @property
+        def end(self):
+            return self._end
+        
+        @end.setter
+        def end(self, newEnd: QPointF):
+            self._end = newEnd
+            self.update()
+        
+        def update(self):
+            path = QPainterPath(self._start)
+            dx = (self._end.x() - self._start.x()) * 0,5
+            controlPoint1 = QPointF(self._start.x() + dx, self._start.y())
+            controlPoint2 = QPointF(self._end.x() - dx, self._end.y())
+            path.cubicTo(controlPoint1, controlPoint2, self._end)
+            self.setPath(path)
     
-    def _addToPins(self):
-        self._pinItem1.addConnectionItem(self)
-        self._pinItem2.addConnectionItem(self)
-
-    def update_path(self):
-        start = self._pinItem1.sceneBoundingRect().center()
-        end = self._pinItem2.sceneBoundingRect().center()
-        self.setPath(ConnectionItem.createPath(start, end))
-
-    @staticmethod
-    def createPath(start: QPointF, end: QPointF) -> QPainterPath:
-        path = QPainterPath(start)
-        dx = (end.x() - start.x()) * 0.5 
-        ctrl1 = QPointF(start.x() + dx, start.y())
-        ctrl2 = QPointF(end.x() - dx, end.y())
-
-        path.cubicTo(ctrl1, ctrl2, end)
-        return path
+    def __init__(self, id: str, pinItem1: PinItem, pinItem2: PinItem, settings: ConnectionItemSettings = ConnectionItemSettings.default()):
+        super().__init__()
+        self._path = ConnectionItem.CubicPath(pinItem1.center, pinItem2.center, settings)
+        pinItem1.parentMoved.connect(lambda: self.updateStart(pinItem1.center))
+        pinItem2.parentMoved.connect(lambda: self.updateEnd(pinItem2.center))
     
-    @staticmethod
-    def isViablePinPair(pin1 : PinItem, pin2 : PinItem) -> bool:
-        if pin1.getParentComponent() == pin2.getParentComponent():
-            print("Pin pair not viable: same parent gate")
-            return False
-        elif pin1.getType == pin2.getType:
-            print("Pin pair not viable: same type")
-            return False
-        else:
-            print("Pin pair viable")
-            return True
+    def updateStart(self, pos : QPointF):
+        self._path.start = pos
+    
+    def updateEnd(self, pos : QPointF):
+        self._path.end = pos

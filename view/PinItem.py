@@ -1,127 +1,94 @@
-from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsItem
-from PySide6.QtCore import Qt, QPointF, Signal, QObject, Slot
-from PySide6.QtGui import QPen
-from view.settings.PinItem import PinItemSettings
+from PySide6.QtWidgets import QGraphicsObject, QGraphicsItem
+from PySide6.QtCore import Qt, QPointF, Signal, QRect
+from PySide6.QtGui import QPen, QPainter
 
-from abc import ABC, abstractmethod
+from view.settings.PinItem import PinItemSettings, InputPinItemSettings, OutputPinItemSettings
 
-class PinItem(QGraphicsEllipseItem, ABC):
+class PinItem(QGraphicsObject):
+    parentMoved = Signal(QPointF)
+    selected = Signal(str)
     
-    @property
-    @abstractmethod
-    def type() -> str:
-        pass
-    
-    @abstractmethod
-    def relX(width: float) -> QPointF:
-        pass
-    
-    @abstractmethod
-    def relY(height: float) -> QPointF:
-        pass
-
-    def __init__(self, parentItem : "CircuitComponentItem", id: str, relativePos : QPointF, settings : PinItemSettings = PinItemSettings.default()):
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, relativePos: QPointF, settings : PinItemSettings = PinItemSettings.default()):
         self._importSettings(settings)
-        super().__init__(-self._radius, -self._radius, self._radius*2, self._radius*2)
+        super().__init__()
         self._id = id
         self.setParentItem(parentItem)
+        parentItem.moved.connect(lambda pos: self.parentMoved.emit(pos))
+        parentItem.selected.connect(lambda val: self.setParentSelected(val))
         self._setupGraphics(relativePos)
         self.setFlags(
-            QGraphicsEllipseItem.ItemIsSelectable |
-            QGraphicsEllipseItem.ItemSendsGeometryChanges
+            QGraphicsObject.ItemIsSelectable |
+            QGraphicsObject.ItemSendsGeometryChanges
         )
-        self._isParentSelected = self._parentComponent.isSelected()
+        self._parentSelected = parentItem.isSelected()
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
         self._color = settings.COLOR
+        self._parentSelectedColor = settings.PARENT_SELECTED_COLOR
         self._selectedColor = settings.SELECTED_COLOR
         self._draggingColor = settings.DRAGGING_COLOR
         self._borderColor = settings.BORDER_COLOR
         self._borderWidth = settings.BORDER_WIDTH
     
     def _setupGraphics(self, relativePos : QPointF):
+        self._rect = QRect(-self._radius, -self._radius, 2*self._radius, 2*self._radius)
         self.setPos(relativePos)
-        #print(self.pos().y())
-        self.setBrush(self._color)
-        self.setPen(QPen(self._borderColor, self._borderWidth))
+        self._brush = self._color
+        self._pen = QPen(self._borderColor, self._borderWidth)
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
-    @property 
-    def selected(self):
-        return self._selected
+    def boundingRect(self):
+        return self._rect
     
-    @isParentSelected.setter
-    def isParentSelected(self, value : bool):
-        self._isParentSelected = value
+    @property
+    def center(self) -> QPointF:
+        return self.sceneBoundingRect().center
+    
+    @property
+    def type(self) -> str:
+        raise NotImplementedError("Pin subclasses must define their type")
+
+    @property
+    def id(self):
+        return self._id
+    
+    def setSelected(self, value : bool) -> None:
+        super().setSelected(value)
         if value:
-            self.setBrush(self._selectedColor)
+            self.selected.emit(self._id)
+            self._brush = self._selectedColor
         else:
-            self.setBrush(self._color)
+            self._brush = self._parentSelectedColor if self.parentSelected else self._color
         self.update()
     
-    def onParentMoved(self):
-        if self._connectionItems:
-            for connectionItem in self._connectionItems:
-                connectionItem.update_path()
-                connectionItem.update()
+    @property
+    def parentSelected(self) -> bool:
+        return self._parentSelected
     
-    def addConnectionItem(self, connectionItem):
-        self._connectionItems.append(connectionItem)
-    
-    def removeConnectionItem(self, connectionItem):
-        self._connectionItems.remove(connectionItem)
-    
-    def mousePressEvent(self, event):
-        print("Pin: mouse pressed")
-        super().mousePressEvent(event)
-        event.accept()
-        self.signals.mousePressed.emit(self)
-    
-    def mouseReleaseEvent(self, event):
-        print("Pin: mouse released")
-        super().mouseReleaseEvent(event)
-        event.accept()
+    def setParentSelected(self, value : bool):
+        self._parentSelected = value
+        self._brush = self._parentSelectedColor if value else self._color
+        self.update()
+
+    def paint(self, painter : QPainter, option, widget = None):
+        painter.setBrush(self._brush)
+        painter.setPen(self._pen)
+        painter.drawEllipse(self._rect)
     
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemPositionChange:
-            print("PinItem : Position change")
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            self.setSelected(value)
         return super().itemChange(change, value)
 
-    @staticmethod
-    def relY(index: int, pinsNum : int, height: float):
-            verticalStep = height / (pinsNum+1)
-            y = (index+1)*verticalStep
-            return y-height/2
-
-    @staticmethod
-    def _inputPinRelX(width):
-        return -width/2
-
-    @staticmethod
-    def _outputPinRelX(width):
-        return width/2
-
 class InputPinItem(PinItem):
-    def __init__(self, parentItem : "CircuitComponentItem", id: str, settings : PinItemSettings = PinItemSettings.default()):
-        super().__init__(parentItem, id)
-
-    def relX(width: float) -> float:
-        return -width/2
-    
-    def relY(height: float) -> float:
-        
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, relativePos: QPointF, settings : PinItemSettings = InputPinItemSettings.default()):
+        super().__init__(parentItem, id, relativePos)
+        print(f"Initialized inputPinItem with {relativePos}")
 
 class OutputPinItem(PinItem):
-    def __init__(self, parentItem : "CircuitComponentItem", id: str, index: int, settings : PinItemSettings = PinItemSettings.default()):
-        super().__init__(parentItem, id)
-    
-    def relX(width: float) -> float:
-        return width/2
-    
-    def relY(height: float, pinNum: int) -> float:
-        step = height / (pinNum+1)
-        y = (self._index+1)*step
-        return y - self.height/2
+    def __init__(self, parentItem : "CircuitComponentItem", id: str, relativePos: QPointF, settings : PinItemSettings = OutputPinItemSettings.default()):
+        super().__init__(parentItem, id, relativePos)
+        print(f"Initialized outputPinItem with {relativePos}")

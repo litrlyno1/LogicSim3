@@ -38,10 +38,6 @@ class ConnectionVM(PropagatorObject):
     @property
     def pinId2(self):
         return self._pinVM2.id
-    
-    @property
-    def pinIds(self):
-        return self.pinId1, self.pinId2
 
     def isConnectedToCircuitComponent(self, circuitComponent : CircuitComponentVM) -> bool:
         return self._pinVM1 in circuitComponent.inputPins + circuitComponent.outputPins or self._pinVM2 in circuitComponent.inputPins + circuitComponent.outputPins

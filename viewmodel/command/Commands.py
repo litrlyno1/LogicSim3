@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Tuple
 import weakref
 
 from PySide6.QtCore import QPointF
@@ -32,16 +32,18 @@ class AddComponents(Command):
             self._canvas.removeComponent(component)
 
 class MoveComponents(Command):
-    def __init__(self, canvasVM : CanvasVM, components : List[ComponentVM], oldPosList : List[QPointF], newPosList : List[QPointF]):
+    def __init__(self, canvasVM : CanvasVM, componentIds : List[ComponentVM], newPosList : List[QPointF]):
         super().__init__()
         self._canvas = canvasVM
-        self._components = components
-        self._oldPosList = oldPosList
+        self._componentIds = componentIds
+        self._oldPosList = []
+        for id in componentIds:
+            self._oldPosList.append(self._canvas.components[id].pos)
         self._newPosList = newPosList
     
     @property
     def components(self):
-        return self._components
+        return self._componentIds
     
     @property
     def oldPosList(self):
@@ -52,12 +54,16 @@ class MoveComponents(Command):
         return self._newPosList
     
     def execute(self):
-        for index in range(len(self._components)):
-            self._components[index].pos = self._newPosList[index]
+        for index in range(len(self._componentIds)):
+            id = self._componentIds[index]
+            component = self._canvas.components[id]
+            component.pos = self._newPosList[index]
     
     def undo(self):
-        for index in range(len(self._components)):
-            self._components[index].pos = self._oldPosList[index]
+        for index in range(len(self._componentIds)):
+            id = self._componentIds[index]
+            component = self._canvas.components[id]
+            component.pos = self._oldPosList[index]
 
 class RemoveComponents(Command):
     def __init__(self, canvasVM : CanvasVM, componentIds : List[str]):
@@ -76,8 +82,6 @@ class RemoveComponents(Command):
                     if connection.isConnectedToCircuitComponent(component):
                         adjacent.add(connection)
                 self._adjacentConnections.append(adjacent)
-            else:
-                self._adjacentConnections.append([])
     
     @property
     def components(self):
@@ -102,10 +106,10 @@ class RemoveComponents(Command):
                 self._canvas.addConnection(connection)
 
 class CreateConnection(Command):
-    def __init__(self, canvasVM : CanvasVM, pinVM1 : PinVM, pinVM2 : PinVM):
+    def __init__(self, canvasVM : CanvasVM, pinId1: str, pinId2: str):
         self._canvas = canvasVM
-        self._pinVM1 = weakref.ref(pinVM1)
-        self._pinVM2 = weakref.ref(pinVM2)
+        self._pinVM1 = weakref.ref(self._canvas.pins[pinId1])
+        self._pinVM2 = weakref.ref(self._canvas.pins[pinId2])
     
     def execute(self):
         self._connection = ConnectionVM(self._pinVM1(), self._pinVM2())

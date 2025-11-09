@@ -3,8 +3,6 @@ from viewmodel.PropagatorObject import PropagatorObject
 from core.idGenerator import generateId
 import weakref
 
-from PySide6.QtCore import QObject
-
 class PinVM(PropagatorObject):
     
     def __init__(self, pin : Pin):

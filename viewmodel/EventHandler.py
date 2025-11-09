@@ -1,11 +1,7 @@
 from view.EventBus import EventBus
 from viewmodel.command.CommandManager import CommandManager
 
-event_command_dict = {
-    "ItemDropped" : "AddComponent", 
-    "ItemsMoved" : "MoveComponents",
-    "ConnectionCreated" : "CreateConnection"
-}
+events = ("AddComponents", "MoveComponents", "RemoveComponents", "CreateConnection", "RemoveConnections")
 
 class EventHandler:
     
@@ -14,5 +10,5 @@ class EventHandler:
         self._commandManager = commandManager
         print("EventHandler initialized")
         
-        for eventName in event_command_dict:
-            self._eventBus.subscribe(eventName=eventName, handler = self._commandManager.createCommand(commandType= event_command_dict[eventName]))
+        for eventName in events:
+            self._eventBus.subscribe(eventName, lambda eventName, **kwargs: self._commandManager.createCommand(commandType=eventName, **kwargs))

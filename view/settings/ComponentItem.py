@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QColor
 
-class GateItemSettings:
+class ComponentItemSettings:
     
     def __init__(self,
                 size,
@@ -28,5 +28,5 @@ class GateItemSettings:
         color = QColor(245, 245, 245)
         selectedColor = QColor(170, 225, 255, 200)
         borderColor = QColor(50, 50, 50)
-        borderWidth = 1.2
+        borderWidth = 2
         return cls(size, fontSize, textColor, color, selectedColor, borderColor, borderWidth)

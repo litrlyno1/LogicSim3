@@ -19,17 +19,19 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
     
     def _createInputPinsVM(self):
         if not self._component.inputPins is None:
-            self._inputPins = []
+            self._inputPins = {}
             for pin in self._component.inputPins:
-                self._inputPins.append(PinVM(pin))
+                newPinVM = PinVM(pin)
+                self._inputPins[newPinVM.id] = newPinVM
         else:
             self._inputPins = None
         
     def _createOutputPinsVM(self):
         if not self._component.outputPins is None:
-            self._outputPins = []
+            self._outputPins = {}
             for pin in self._component.outputPins:
-                self._outputPins.append(PinVM(pin))
+                newPinVM = PinVM(pin)
+                self._outputPins[newPinVM.id] = newPinVM
         else:
             self._outputPins = None
     
@@ -40,10 +42,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
     @property
     def inputPinIds(self) -> List[str]:
         if self._inputPins:
-            ids = list()
-            for pin in self._inputPins:
-                ids.append(pin.id)
-            return ids
+            return list(self._inputPins.keys())
         else:
             return []
     
@@ -54,10 +53,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
     @property
     def outputPinIds(self) -> List[str]:
         if self._outputPins:
-            ids = list()
-            for pin in self._outputPins:
-                ids.append(pin.id)
-            return ids
+            return list(self._outputPins.keys())
         else:
             return []
     

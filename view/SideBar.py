@@ -25,23 +25,19 @@ class SideBar(QWidget):
     def _setupGraphics(self):
         self.setFixedWidth(self._width)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-
         layout = QVBoxLayout(self)
         layout.setContentsMargins(self._margin, self._margin, self._margin, self._margin)
         layout.setSpacing(self._spacing)
-
         header = QLabel(self._header)
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet(self._styleSheet)
         layout.addWidget(header)
-
         for gateType in self.gateTypes:
             button = QPushButton(gateType)
             button.setObjectName(f"btn_{gateType.lower()}")
             button.setStyleSheet(self._buttonStyleSheet)
             button.pressed.connect(lambda gt = gateType: self.startDrag(gt))
             layout.addWidget(button)
-
         layout.addStretch()
     
     def startDrag(self, gateType: str):
