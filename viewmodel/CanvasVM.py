@@ -45,16 +45,16 @@ class CanvasVM(QObject):
         else:
             self.componentAdded.emit(component.id, component.type, component.pos)
             print(f"CanvasVM : emitting component added signal with {component.id, component.type, component.pos}")
-        print(f"Current length of componentList: {len(self._components)}")
+        print(f"Current component registry: {self._components}")
     
     def removeComponent(self, component : ComponentVM):
         self._components.pop(component.id)
         component.posChanged.disconnect()
         if isinstance(component, CircuitComponentVM):
             for pin in component.inputPins.values():
-                self._inputPins.remove(pin.id)
+                self._inputPins.pop(pin.id)
             for pin in component.outputPins.values():
-                self._outputPins.remove(pin.id)
+                self._outputPins.pop(pin.id)
             component.valueChanged.disconnect()
         self.componentRemoved.emit(component.id)
         print(f"CanvasVM : emitting component removed signal with {component.id}")

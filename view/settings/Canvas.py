@@ -1,5 +1,5 @@
 from PySide6.QtGui import QColor
-from PySide6.QtCore import QRect
+from PySide6.QtCore import QRect, QPointF
 
 class CanvasSettings:
     def __init__(self,
@@ -13,7 +13,8 @@ class CanvasSettings:
                 gridColor : QColor,
                 gridDarkColor : QColor,
                 gridSize: int,
-                gridMajorFactor: int):
+                gridMajorFactor: int,
+                pasteOffset: QPointF):
         self.SCENE_RECT = sceneRect
         self.ZOOM = zoom
         self.ZOOM_MIN = zoomMin
@@ -25,6 +26,7 @@ class CanvasSettings:
         self.GRID_DARK_COLOR = gridDarkColor
         self.GRID_SIZE = gridSize
         self.GRID_MAJOR_FACTOR = gridMajorFactor
+        self.PASTE_OFFSET = pasteOffset
     
     @classmethod
     def default(cls):
@@ -39,4 +41,5 @@ class CanvasSettings:
         gridDarkColor = QColor("#2A2A2A")
         gridSize = 10
         gridMajorFactor = 5
-        return cls(sceneRect, zoom, zoomMin, zoomMax, zoomStep, wheelNotchDelta, backgroundColor, gridColor, gridDarkColor, gridSize, gridMajorFactor)
+        pasteOffset = QPointF(2, 2)
+        return cls(sceneRect, zoom, zoomMin, zoomMax, zoomStep, wheelNotchDelta, backgroundColor, gridColor, gridDarkColor, gridSize, gridMajorFactor, pasteOffset)
