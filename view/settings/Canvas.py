@@ -8,6 +8,7 @@ class CanvasSettings:
                 zoomMin : float,
                 zoomMax : float,
                 zoomStep : float,
+                wheelNotchDelta: float,
                 backgroundColor: QColor,
                 gridColor : QColor,
                 gridDarkColor : QColor,
@@ -18,6 +19,7 @@ class CanvasSettings:
         self.ZOOM_MIN = zoomMin
         self.ZOOM_MAX = zoomMax
         self.ZOOM_STEP = zoomStep
+        self.WHEEL_NOTCH_DATA = wheelNotchDelta
         self.BACKGROUND_COLOR = backgroundColor
         self.GRID_COLOR = gridColor
         self.GRID_DARK_COLOR = gridDarkColor
@@ -30,10 +32,11 @@ class CanvasSettings:
         zoom = 1.0
         zoomMin = 0.5
         zoomMax = 20.0
-        zoomStep = 1.1
+        zoomStep = 1.15
+        wheelNotchDelta = 120
         backgroundColor = QColor("#D4D4D4")
         gridColor = QColor("#646464")
         gridDarkColor = QColor("#2A2A2A")
         gridSize = 10
         gridMajorFactor = 5
-        return cls(sceneRect, zoom, zoomMin, zoomMax, zoomStep, backgroundColor, gridColor, gridDarkColor, gridSize, gridMajorFactor)
+        return cls(sceneRect, zoom, zoomMin, zoomMax, zoomStep, wheelNotchDelta, backgroundColor, gridColor, gridDarkColor, gridSize, gridMajorFactor)

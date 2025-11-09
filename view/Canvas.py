@@ -62,6 +62,7 @@ class Canvas(QGraphicsView):
         self._zoomMin = settings.ZOOM_MIN
         self._zoomMax = settings.ZOOM_MAX
         self._zoomStep = settings.ZOOM_STEP
+        self._wheelNotchData = settings.WHEEL_NOTCH_DATA
         self._backgroundColor = settings.BACKGROUND_COLOR
         self._gridColor = settings.GRID_COLOR
         self._gridDarkColor = settings.GRID_COLOR
@@ -159,10 +160,11 @@ class Canvas(QGraphicsView):
         delta = event.angleDelta().y()
         if delta == 0:
             return
-        factor = self._zoomStep if delta > 0 else 1 / self._zoomStep
+        factor = self._zoomStep ** (delta / self._wheelNotchData)
         newZoom = self._zoom * factor
         if newZoom < self._zoomMin or newZoom > self._zoomMax:
             return
+        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.scale(factor, factor)
         self._zoom = newZoom
         event.accept()
