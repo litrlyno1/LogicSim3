@@ -24,7 +24,7 @@ class Canvas(QGraphicsView):
     addComponentsRequest = Signal(list, list)
     #type list, pos list
     moveComponentsRequest = Signal(list, list)
-    #ids, oldPos list, newPosList
+    #ids, newPosList
     removeComponentsRequest = Signal(list)
     #ids
     createConnectionRequest = Signal(str, str, str)
@@ -102,7 +102,7 @@ class Canvas(QGraphicsView):
         if self._canvasVM is not None:
             self._canvasVM.componentAdded.connect(self.addComponent)
             self._canvasVM.circuitComponentAdded.connect(self.addCircuitComponent)
-            #self._canvasVM.componentPosUpdated.connect(self.componentMovedUpdate)
+            self._canvasVM.componentPosUpdated.connect(self.moveComponent)
             self._canvasVM.connectionAdded.connect(self.addConnection)
 
     @Slot(str, str, QPointF)
@@ -120,6 +120,11 @@ class Canvas(QGraphicsView):
             self._inputPinRegistry[pinItem.id] = pinItem
         for pinItem in item.outputPinItems.values():
             self._outputPinRegistry[pinItem.id] = pinItem
+    
+    @Slot(str, QPointF)
+    def moveComponent(self, id, pos):
+        item = self._componentRegistry[id]
+        item.setPos(pos)
     
     @Slot(str, tuple, tuple)
     def addConnection(self, id, pinId1, pinId2):
@@ -201,11 +206,12 @@ class Canvas(QGraphicsView):
             newPosList = []
             for ghost in self._ghosts:
                 ids.append(self._ghosts[ghost].id)
-                newPosList.append(self._ghosts[ghost].pos()+delta)
+                newPosList.append(ghost.pos()+delta)
                 self.scene().removeItem(ghost)
             self._ghosts.clear()
             self._dragStartPos = None
             self._dragging = False
+            print(f"Canvas: emitting move components request with ids: {ids} and newPosList {newPosList}")
             self.moveComponentsRequest.emit(ids, newPosList)
             event.accept()
         super().mouseReleaseEvent(event)

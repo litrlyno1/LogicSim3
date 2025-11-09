@@ -40,6 +40,7 @@ class MoveComponents(Command):
         for id in componentIds:
             self._oldPosList.append(self._canvas.components[id].pos)
         self._newPosList = newPosList
+        print(f"Commands: Initialized command MoveComponent with ids {self._componentIds}, oldPosList {self._oldPosList}, newPosList {self._newPosList}")
     
     @property
     def components(self):
