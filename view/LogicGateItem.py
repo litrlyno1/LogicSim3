@@ -23,8 +23,8 @@ class LogicGateItem(CircuitComponentItem):
         painter.drawText(self._rect, Qt.AlignCenter, self._type)
     
     def clone(self):
-        copy = LogicGateItem(self._id, self._type, self.pos(), list(self.inputPinItems.keys()), list(self.outputPinItems.keys()), self._settings)
-        return copy
+        clone = LogicGateItem(self._id, self._type, self.pos(), list(self.inputPinItems.keys()), list(self.outputPinItems.keys()), self._settings)
+        return clone
     
     def ghost(self):
         ghost = self.clone()

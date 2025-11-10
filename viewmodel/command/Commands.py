@@ -141,3 +141,15 @@ class RemoveConnections(Command):
     def undo(self):
         for connection in self._connections:
             self._canvas.addConnection(connection)
+
+class ToggleComponent(Command):
+    def __init__(self, canvasVM : CanvasVM, componentId: str):
+        super().__init__()
+        self._canvas = canvasVM
+        self._component = self._canvas.components[componentId]
+    
+    def execute(self):
+        self._component.toggle()
+    
+    def undo(self):
+        self._component.toggle()

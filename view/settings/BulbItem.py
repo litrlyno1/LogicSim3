@@ -27,7 +27,7 @@ class BulbItemSettings(CircuitComponentItemSettings):
     @classmethod
     def default(cls):
         settings = CircuitComponentItemSettings.default()
-        settings.SIZE = QSize(80, 80)
+        settings.SIZE = QSize(40, 40)
         settings.COLOR = QColor(255, 170, 170)
         ON_COLOR = QColor(184, 230, 176)
         return cls(settings.SIZE, settings.FONT_SIZE, settings.TEXT_COLOR, settings.COLOR, ON_COLOR, 

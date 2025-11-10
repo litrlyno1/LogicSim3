@@ -9,7 +9,7 @@ from viewmodel.PinVM import PinVM
 class CanvasVM(QObject):
     componentAdded = Signal(str, str, QPointF)
     #id, type, pos
-    circuitComponentAdded = Signal(str, str, QPointF, list, list)
+    circuitComponentAdded = Signal(str, str, QPointF, list, list, bool)
     #id, type, pos, list[inputPins], list[outputPins]
     componentRemoved = Signal(str)
     #id
@@ -34,7 +34,7 @@ class CanvasVM(QObject):
         component.posChanged.connect(lambda id, pos: self.componentPosUpdated.emit(id, pos))
         if isinstance(component, CircuitComponentVM):
             component.valueChanged.connect(lambda id, value: self.componentValueUpdated.emit(id, value))
-            self.circuitComponentAdded.emit(component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds)
+            self.circuitComponentAdded.emit(component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds, component.value)
             print(f"CanvasVM : emitting circuit component added signal with {component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds}")
         else:
             self.componentAdded.emit(component.id, component.type, component.pos)

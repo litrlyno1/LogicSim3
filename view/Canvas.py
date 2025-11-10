@@ -31,6 +31,7 @@ class Canvas(QGraphicsView):
     #(parent id, pin id), (parent id, pin id),
     removeConnectionsRequest = Signal(list)
     #ids
+    componentToggleRequest = Signal(str)
     
     def __init__(self, canvasVM : CanvasVM = None, parent = None, settings : CanvasSettings = CanvasSettings.default()):
         super().__init__(parent)
@@ -76,6 +77,7 @@ class Canvas(QGraphicsView):
         self.removeComponentsRequest.connect(lambda ids: self._eventBus.emit(eventName="RemoveComponents", componentIds=ids))
         self.createConnectionRequest.connect(lambda parentPinPair1, parentPinPair2: self._eventBus.emit(eventName="CreateConnection", parentPinPair1=parentPinPair1, parentPinPair2=parentPinPair2))
         self.removeConnectionsRequest.connect(lambda ids: self._eventBus.emit(eventName="RemoveConnections", connectionIds = ids))
+        self.componentToggleRequest.connect(lambda id: self._eventBus.emit(eventName="ToggleComponent", componentId = id))
     
     @property
     def eventBus(self):
@@ -106,6 +108,7 @@ class Canvas(QGraphicsView):
             self._canvasVM.componentPosUpdated.connect(self.moveComponent)
             self._canvasVM.connectionAdded.connect(self.addConnection)
             self._canvasVM.connectionRemoved.connect(self.removeConnection)
+            self._canvasVM.componentValueUpdated.connect(self.updateComponentValue)
 
     @Slot(str, str, QPointF)
     def addComponent(self, id, type, pos):
@@ -118,11 +121,13 @@ class Canvas(QGraphicsView):
         item = self._componentRegistry[id]
         self._scene.removeItem(item)
     
-    @Slot(str, str, QPointF, list, list)
-    def addCircuitComponent(self, id, type, pos, inputPinIds, outputPinIds):
-        item = CircuitComponentItemFactory.createCircuitComponentItem(id, type, pos, inputPinIds, outputPinIds)
+    @Slot(str, str, QPointF, list, list, bool)
+    def addCircuitComponent(self, id, type, pos, inputPinIds, outputPinIds, value):
+        item = CircuitComponentItemFactory.createCircuitComponentItem(id, type, pos, inputPinIds, outputPinIds, value)
         self._componentRegistry[id] = item
         self._scene.addItem(item)
+        if isinstance(item, SwitchItem):
+            item.toggleRequested.connect(lambda id: self.componentToggleRequest.emit(id))
     
     @Slot(str, QPointF)
     def moveComponent(self, id, pos):
@@ -143,6 +148,10 @@ class Canvas(QGraphicsView):
     def removeConnection(self, id):
         self._scene.removeItem(self._connectionRegistry[id])
         self._connectionRegistry.pop(id)
+    
+    @Slot(str, bool)
+    def updateComponentValue(self, id, value):
+        self._componentRegistry[id].value = value
     
     def keyPressEvent(self, event):
         if (event.key() == Qt.Key_Backspace):

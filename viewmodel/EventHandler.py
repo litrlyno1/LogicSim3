@@ -2,7 +2,7 @@ from view.EventBus import EventBus
 from viewmodel.command.CommandManager import CommandManager
 
 metaEvents = ("Undo", "Redo")
-events = ("AddComponents", "MoveComponents", "RemoveComponents", "CreateConnection", "RemoveConnections")
+events = ("AddComponents", "MoveComponents", "RemoveComponents", "CreateConnection", "RemoveConnections", "ToggleComponent")
 
 class EventHandler:
     

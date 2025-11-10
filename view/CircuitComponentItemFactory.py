@@ -15,8 +15,8 @@ logicGates = ("AndGate", "OrGate", "NotGate", "XorGate", "NandGate")
 class CircuitComponentItemFactory:
     
     @staticmethod
-    def createCircuitComponentItem(id: str, type: str, pos: QPointF, inputPinIds: list, outputPinIds: list):
+    def createCircuitComponentItem(id: str, type: str, pos: QPointF, inputPinIds: list, outputPinIds: list, value: bool):
         if type in others:
-            return others[type](id, type, pos, inputPinIds, outputPinIds)
+            return others[type](id, type, pos, inputPinIds, outputPinIds, value)
         elif type in logicGates:
             return LogicGateItem(id, type, pos, inputPinIds, outputPinIds)

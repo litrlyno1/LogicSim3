@@ -24,7 +24,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
                 newPinVM = PinVM(self._id, pin)
                 self._inputPins[newPinVM.id] = newPinVM
         else:
-            self._inputPins = None
+            self._inputPins = {}
         
     def _createOutputPinsVM(self):
         if not self._component.outputPins is None:
@@ -33,7 +33,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
                 newPinVM = PinVM(self._id, pin)
                 self._outputPins[newPinVM.id] = newPinVM
         else:
-            self._outputPins = None
+            self._outputPins = {}
     
     @property
     def inputPins(self):
@@ -60,3 +60,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
     @property
     def pins(self):
         return self._inputPins | self._outputPins
+    
+    @property
+    def value(self):
+        return self._component.value

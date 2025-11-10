@@ -71,7 +71,7 @@ class ComponentItem(QGraphicsObject):
         self.moved.emit(pos)
     
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedHasChanged:
+        if change == QGraphicsItem.ItemSelectedChange:
             print(f"Component selection : {value}")
             self._brush = self._selectedColor if value else self._color
             self.update()

@@ -6,7 +6,6 @@ from view.PinItem import PinItem
 from view.settings.ConnectionItem import ConnectionItemSettings
 
 class ConnectionItem(QGraphicsObject):
-    selected = Signal(str)
     removed = Signal(str)
     valueChanged = Signal(str)
     
@@ -22,16 +21,17 @@ class ConnectionItem(QGraphicsObject):
         def _importSettings(self, settings: ConnectionItemSettings):
             self._settings = settings
             self._color = settings.COLOR
+            self._selectedColor = settings.SELECTED_COLOR
             self._onColor = settings.ON_COLOR
-            self._selectedHighlightColor = settings.SELECTED_HIGHLIGHT_COLOR
             self._width = settings.WIDTH
         
         def _setupGraphics(self):
-            pen = QPen(self._color, self._width)
-            pen.setCapStyle(Qt.RoundCap)
-            self.setPen(pen)
+            self._pen = QPen(self._color, self._width)
+            self._pen.setCapStyle(Qt.RoundCap)
+            self.setPen(self._pen)
             self.setZValue(1)
             self._updatePath()
+        
         
         def boundingRect(self):
             return super().boundingRect()
@@ -79,6 +79,10 @@ class ConnectionItem(QGraphicsObject):
         self._path.setParentItem(self)
         pinItem1.parentMoved.connect(lambda: self.updateStart(pinItem1.center))
         pinItem2.parentMoved.connect(lambda: self.updateEnd(pinItem2.center))
+        self.setFlags(
+            QGraphicsItem.ItemIsSelectable |
+            QGraphicsItem.ItemSendsGeometryChanges
+        )
         print(self._path.start)
         print(self._path.end)
     
@@ -97,4 +101,9 @@ class ConnectionItem(QGraphicsObject):
     def shape(self):
         return self._path.shape()
     
-    
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            self._path._pen.setColor(self._path._selectedColor) if value else self._path._pen.setBrush(self._path._color)
+            self._path.setPen(self._path._pen)
+            self.update()
+        return super().itemChange(change, value)

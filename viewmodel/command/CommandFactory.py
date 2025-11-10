@@ -5,7 +5,8 @@ commandRegistry = {
     "MoveComponents" : MoveComponents, 
     "CreateConnection" : CreateConnection,
     "RemoveComponents" : RemoveComponents,
-    "RemoveConnections" : RemoveConnections
+    "RemoveConnections" : RemoveConnections,
+    "ToggleComponent":  ToggleComponent
 }
 
 class CommandFactory:

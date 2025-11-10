@@ -1,17 +1,17 @@
 from typing import List, Dict
-from PySide6.QtCore import QPointF, Signal
+from PySide6.QtCore import QPointF, Signal, Qt
 
 from view.ComponentItem import ComponentItem
 from view.settings.CircuitComponentItem import CircuitComponentItemSettings
 from view.PinItem import InputPinItem, OutputPinItem
 
 class CircuitComponentItem(ComponentItem):
-    pinSelected = Signal(str, bool)
 
-    def __init__(self, id : str, type : str, pos : QPointF, inputPinIds : List[str], outputPinIds : List[str], settings: CircuitComponentItemSettings = CircuitComponentItemSettings.default()):
-        super().__init__(id, type, pos, settings)
+    def __init__(self, id : str, type : str, pos : QPointF, inputPinIds : List[str], outputPinIds : List[str], value: bool, settings: CircuitComponentItemSettings = CircuitComponentItemSettings.default()):
+        super().__init__(id=id, type=type, pos=pos, settings=settings)
         print(f"Initializing CircuitComponentItem with {self.width} width and {self.height} height")
         self._initPinItems(inputPinIds, outputPinIds)
+        self._value = value
     
     def _initPinItems(self, inputPinIds : List[str], outputPinIds : List[str]):
         self._initInputPins(inputPinIds)
@@ -34,6 +34,19 @@ class CircuitComponentItem(ComponentItem):
             relativePos = self.outputPinPos(self.width, self.height, index, self._numOutputs)
             pinItem = OutputPinItem(parentItem=self, id=id, relativePos=relativePos)
             self._outputPins[outputPinIds[index]] = pinItem
+    
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, newValue: bool):
+        self._value = newValue
+        self.updateVisuals(newValue)
+        self.update()
+    
+    def updateVisuals(self, newValue: bool):
+        pass
     
     @property
     def inputPinItems(self):
