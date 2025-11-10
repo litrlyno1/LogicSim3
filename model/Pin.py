@@ -44,6 +44,7 @@ class InputPin(Pin):
     
     def _evaluate(self) -> None:
         self._value = self._connection.value if self._connection else False
+        print(f"Input Pin evaluated, value {self._value}")
 
 class OutputPin(Pin):
     type = "OutputPin"
@@ -67,6 +68,7 @@ class OutputPin(Pin):
     
     def _evaluate(self) -> None:
         self._value = self._parent().value
+        print(f"Output Pin evaluated, value {self._value}")
 
 #connection is an additional layer for pins interacting with each other
 class Connection(Propagator):
@@ -82,6 +84,7 @@ class Connection(Propagator):
     
     def _evaluate(self) -> None:
         self._value = self._source().value
+        print(f"Connection evaluated, value {self._value}")
     
     def connect(self):
         self._source().connect(self)

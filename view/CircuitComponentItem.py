@@ -42,6 +42,10 @@ class CircuitComponentItem(ComponentItem):
     @property
     def outputPinItems(self):
         return self._outputPins
+    
+    @property
+    def pinItems(self):
+        return self._inputPins | self._outputPins
 
     def inputPinPos(self, width: float, height: float, index: int, pinNum: int):
         return QPointF(self.inputRelX(width, index, pinNum), self.inputRelY(height, index, pinNum))

@@ -5,11 +5,8 @@ from PySide6.QtGui import QFont, QPen
 from view.settings.ComponentItem import ComponentItemSettings
 
 class ComponentItem(QGraphicsObject):
-    moveRequested = Signal(str, QPointF)
     moved = Signal(QPointF)
     selected = Signal(bool)
-    removeRequested = Signal(str)
-    removed = Signal(str)
     
     def __init__(self, id : str, type : str, pos : str, settings = ComponentItemSettings.default()):
         super().__init__()
@@ -22,7 +19,7 @@ class ComponentItem(QGraphicsObject):
         self._importSettings(settings)
         self.setPos(pos)
         self.setAcceptHoverEvents(True)
-        self.setZValue(1)
+        self.setZValue(3)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
     def _importSettings(self, settings: ComponentItemSettings):
@@ -68,6 +65,10 @@ class ComponentItem(QGraphicsObject):
     @property
     def rect(self) -> QRectF:
         return self._rect
+    
+    def setPos(self, pos:QPointF):
+        super().setPos(pos)
+        self.moved.emit(pos)
     
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedHasChanged:

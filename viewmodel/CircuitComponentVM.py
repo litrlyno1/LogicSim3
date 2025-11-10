@@ -21,7 +21,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
         if not self._component.inputPins is None:
             self._inputPins = {}
             for pin in self._component.inputPins:
-                newPinVM = PinVM(pin)
+                newPinVM = PinVM(self._id, pin)
                 self._inputPins[newPinVM.id] = newPinVM
         else:
             self._inputPins = None
@@ -30,7 +30,7 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
         if not self._component.outputPins is None:
             self._outputPins = {}
             for pin in self._component.outputPins:
-                newPinVM = PinVM(pin)
+                newPinVM = PinVM(self._id, pin)
                 self._outputPins[newPinVM.id] = newPinVM
         else:
             self._outputPins = None
@@ -58,8 +58,5 @@ class CircuitComponentVM(ComponentVM, PropagatorObject):
             return []
     
     @property
-    def connections(self):
-        connections = set()
-        for pin in self._inputPinsVM + self._outputPinsVM:
-            connections.update(pin.connections)
-        return connections
+    def pins(self):
+        return self._inputPins | self._outputPins

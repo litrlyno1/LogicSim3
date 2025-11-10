@@ -9,6 +9,7 @@ class AndGate(LogicGate):
         super().__init__()
     
     def _evaluate(self):
+        print(f"And Gate evaluated with value {self._value}")
         self._value = self._inputPins[0].value and self._inputPins[1].value
 
 class OrGate(LogicGate):
@@ -20,7 +21,8 @@ class OrGate(LogicGate):
         super().__init__()
     
     def _evaluate(self):
-        self._value = self._inputPins[0] or self._inputPins[1]
+        print(f"Or Gate evaluated with value {self._value}")
+        self._value = self._inputPins[0].value or self._inputPins[1].value
 
 class XorGate(LogicGate):
     type = "XorGate"
@@ -31,7 +33,8 @@ class XorGate(LogicGate):
         super().__init__()
     
     def _evaluate(self):
-        self._value = (not self._inputPins[0] and self._inputPins[1]) or (self._inputPins[0] and not self._inputPins[1])
+        print(f"Xor Gate evaluated with value {self._value}")
+        self._value = (not self._inputPins[0].value and self._inputPins[1].value) or (self._inputPins[0].value and not self._inputPins[1].value)
 
 class NotGate(LogicGate):
     type = "NotGate"
@@ -42,4 +45,5 @@ class NotGate(LogicGate):
         super().__init__()
     
     def _evaluate(self):
-        self._value = not self._inputPins[0]
+        print(f"Not Gate evaluated with value {self._value}")
+        self._value = not self._inputPins[0].value

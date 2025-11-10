@@ -77,12 +77,13 @@ class RemoveComponents(Command):
             component = self._canvas.components[id]
             self._components.append(component)
             if isinstance(component, CircuitComponentVM):
-                adjacent = set()
+                adjacentConnections = set()
                 for id in self._canvas.connections:
                     connection = self._canvas.connections[id]
                     if connection.isConnectedToCircuitComponent(component):
-                        adjacent.add(connection)
-                self._adjacentConnections.append(adjacent)
+                        adjacentConnections.add(connection)
+                self._adjacentConnections.append(adjacentConnections)
+            print(f"Command RemoveComponents. Adjacent connections {adjacentConnections}")
     
     @property
     def components(self):
@@ -107,13 +108,18 @@ class RemoveComponents(Command):
                 self._canvas.addConnection(connection)
 
 class CreateConnection(Command):
-    def __init__(self, canvasVM : CanvasVM, pinId1: str, pinId2: str):
+    def __init__(self, canvasVM : CanvasVM, parentPinPair1 : Tuple[str, str], parentPinPair2: Tuple[str, str]):
+        super().__init__()
         self._canvas = canvasVM
-        self._pinVM1 = weakref.ref(self._canvas.pins[pinId1])
-        self._pinVM2 = weakref.ref(self._canvas.pins[pinId2])
+        self._pinVM1 = weakref.ref(self._canvas.components[parentPinPair1[0]].pins[parentPinPair1[1]])
+        self._pinVM2 = weakref.ref(self._canvas.components[parentPinPair2[0]].pins[parentPinPair2[1]])
+        if ConnectionVM.canConnect(self._pinVM1(), self._pinVM2()):
+            self._connection = ConnectionVM(self._pinVM1(), self._pinVM2())
+        else:
+            self._connection = None
+            self._createdSuccessfully = False
     
     def execute(self):
-        self._connection = ConnectionVM(self._pinVM1(), self._pinVM2())
         self._canvas.addConnection(self._connection)
     
     def undo(self):
@@ -121,6 +127,7 @@ class CreateConnection(Command):
 
 class RemoveConnections(Command):
     def __init__(self, canvasVM : CanvasVM, connectionIds : List[str]):
+        super().__init__()
         self._canvas = canvasVM
         self._connectionIds = connectionIds
         self._connections = list()

@@ -1,41 +1,15 @@
-from PySide6.QtGui import QBrush, QColor, QPainter, QPen
-from PySide6.QtCore import QRectF, Qt, Slot
+from typing import List
 
-from view.ComponentItem import ComponentItem
-from viewmodel.CircuitComponentVM import ComponentVM
+from PySide6.QtCore import QRectF, Qt, Slot, QPointF, Signal
+from view.CircuitComponentItem import CircuitComponentItem
+from view.settings.BulbItem import BulbItemSettings
 
-class BulbItem(ComponentItem):
+class BulbItem(CircuitComponentItem):
+    bulbClicked = Signal(str)
     
-    def __init__(self, componentVM):
-        super().__init__(componentVM=componentVM)
-        self._componentVM.modelUpdated.connect(self.updateView)
-        self._rect = QRectF(
-            -80 / 2,
-            -50 / 2,
-            80,
-            50
-        )
-        self.initPinItems()
-        self._value = False
+    def __init__(self, id: str, type:str, pos: QPointF, inputPinIds: List[str], outputPinIds: List[str], settings: BulbItemSettings = BulbItemSettings.default()):
+        super().__init__(id, type, pos, inputPinIds, outputPinIds, settings)
+        self._importSettings(settings)
     
-    def boundingRect(self):
-        return self._rect
-
-    def paint(self, painter: QPainter, option, widget=None):
-        painter.setRenderHint(QPainter.Antialiasing)
-        self._color = QColor("blue")
-        self._onColor = QColor("red")
-        self._selectedColor = QColor("gray")
-        brush = QBrush(self._color) if self._value == False else QBrush(self._onColor)
-        painter.setBrush(brush)
-
-        pen = QPen(QColor("black"))
-        pen.setWidth(2)
-        painter.setPen(pen)
-
-        painter.drawRect(self._rect)
-    
-    @Slot(bool)
-    def updateView(self, value : bool):
-        self._value = value
-        self.update()
+    def _importSettings(self, settings: BulbItemSettings):
+        self._onColor = settings.ON_COLOR

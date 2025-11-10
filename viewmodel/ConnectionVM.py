@@ -13,8 +13,8 @@ class ConnectionVM(PropagatorObject):
     def __init__(self, pinVM1 : PinVM, pinVM2 : PinVM):
         self._pinVM1 = pinVM1
         self._pinVM2 = pinVM2
-        self._connection = Connection.create(pinVM1.pin, pinVM2.pin)
         self._id = generateId(prefix = "Connection")
+        self._connection = Connection.create(pinVM1.pin, pinVM2.pin)
         super().__init__(id = self._id, propagator= self._connection)
     
     @staticmethod
@@ -38,6 +38,14 @@ class ConnectionVM(PropagatorObject):
     @property
     def pinId2(self):
         return self._pinVM2.id
+    
+    @property
+    def parentPinIdPair1(self) -> tuple:
+        return self._pinVM1.parentId, self._pinVM1.id
+    
+    @property
+    def parentPinIdPair2(self) -> tuple:
+        return self._pinVM2.parentId, self._pinVM2.id
 
     def isConnectedToCircuitComponent(self, circuitComponent : CircuitComponentVM) -> bool:
-        return self._pinVM1 in circuitComponent.inputPins + circuitComponent.outputPins or self._pinVM2 in circuitComponent.inputPins + circuitComponent.outputPins
+        return self._pinVM1.id in circuitComponent.pins.keys() or self._pinVM2.id in circuitComponent.pins.keys()

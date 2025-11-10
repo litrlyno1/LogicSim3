@@ -27,8 +27,8 @@ class Canvas(QGraphicsView):
     #ids, newPosList
     removeComponentsRequest = Signal(list)
     #ids
-    createConnectionRequest = Signal(str, str, str)
-    #id1, id2
+    createConnectionRequest = Signal(tuple, tuple)
+    #(parent id, pin id), (parent id, pin id),
     removeConnectionsRequest = Signal(list)
     #ids
     
@@ -40,21 +40,20 @@ class Canvas(QGraphicsView):
         self._setupGraphics()
         self.connectCanvasVM(canvasVM)
         self._initComponentDragging()
+        self._initConnectionDragging()
         self.update()
 
     def _initRegistries(self):
         self._componentRegistry: dict[str, ComponentItem] = {}
         self._connectionRegistry : dict[str, ComponentItem] = {}
-        self._inputPinRegistry : dict[str, InputPinItem] = {}
-        self._outputPinRegistry : dict[str, OutputPinItem] = {}
 
     def _initComponentDragging(self):
-        self._dragStartPos = None
-        self._dragging = False
+        self._componentDragStartPos = None
+        self._componentDragging = False
     
-    @property
-    def pinRegistry(self):
-        return self._inputPinRegistry | self._outputPinRegistry
+    def _initConnectionDragging(self):
+        self._connectionDragStartPin = None
+        self._connectionDragging = False
     
     def _importSettings(self, settings: CanvasSettings = CanvasSettings.default()) -> None:
         self._sceneRect = settings.SCENE_RECT
@@ -106,6 +105,7 @@ class Canvas(QGraphicsView):
             self._canvasVM.circuitComponentAdded.connect(self.addCircuitComponent)
             self._canvasVM.componentPosUpdated.connect(self.moveComponent)
             self._canvasVM.connectionAdded.connect(self.addConnection)
+            self._canvasVM.connectionRemoved.connect(self.removeConnection)
 
     @Slot(str, str, QPointF)
     def addComponent(self, id, type, pos):
@@ -117,20 +117,12 @@ class Canvas(QGraphicsView):
     def removeComponent(self, id):
         item = self._componentRegistry[id]
         self._scene.removeItem(item)
-        if isinstance(item, CircuitComponentItem):
-            for pinId in [pin.id for pin in item.inputPinItems] + [pin.id for pin in item.outputPinItems]:
-                self._inputPinRegistry.pop(key=pinId, default=None)
-                self._outputPinRegistry.pop(key=pinId, default=None)
     
     @Slot(str, str, QPointF, list, list)
     def addCircuitComponent(self, id, type, pos, inputPinIds, outputPinIds):
         item = CircuitComponentItemFactory.createCircuitComponentItem(id, type, pos, inputPinIds, outputPinIds)
         self._componentRegistry[id] = item
         self._scene.addItem(item)
-        for pinItem in item.inputPinItems.values():
-            self._inputPinRegistry[pinItem.id] = pinItem
-        for pinItem in item.outputPinItems.values():
-            self._outputPinRegistry[pinItem.id] = pinItem
     
     @Slot(str, QPointF)
     def moveComponent(self, id, pos):
@@ -138,18 +130,27 @@ class Canvas(QGraphicsView):
         item.setPos(pos)
     
     @Slot(str, tuple, tuple)
-    def addConnection(self, id, pinId1, pinId2):
-        connection = ConnectionItem(id, self.pinRegistry[pinId1], self.pinRegistry[pinId2])
+    def addConnection(self, id, parentPinPair1, parentPinPair2):
+        pin1 = self._componentRegistry[parentPinPair1[0]].pinItems[parentPinPair1[1]]
+        pin2 = self._componentRegistry[parentPinPair2[0]].pinItems[parentPinPair2[1]]
+        connection = ConnectionItem(id, pin1, pin2)
         self._connectionRegistry[id] = connection
         self._scene.addItem(connection)
+        print(connection.scene())
+        print(connection.boundingRect())
+    
+    @Slot(str)
+    def removeConnection(self, id):
+        self._scene.removeItem(self._connectionRegistry[id])
+        self._connectionRegistry.pop(id)
     
     def keyPressEvent(self, event):
         if (event.key() == Qt.Key_Backspace):
             self.removeSelected()
-        elif (event.key() == Qt.Key_C and (event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)):
-            self.copySelected()
+        if (event.key() == Qt.Key_C and (event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)):
+            self.copySelectedComponents()
         elif (event.key() == Qt.Key_V and (event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)):
-            self.pasteSelected()
+            self.pasteSelectedComponents()
         elif (event.key() == Qt.Key_Z and event.modifiers() & Qt.ShiftModifier and (event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)):
             self._eventBus.emit(eventName="Redo")
         elif (event.key() == Qt.Key_Z  and (event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)):
@@ -157,19 +158,18 @@ class Canvas(QGraphicsView):
         else:
             super().keyPressEvent(event)
     
-    def copySelected(self):
+    def copySelectedComponents(self):
         self._copiedComponents = [item for item in self._scene.selectedItems() if isinstance(item, ComponentItem)]
     
-    def pasteSelected(self):
+    def pasteSelectedComponents(self):
         if self._copiedComponents:
             typeList = [component.type for component in self._copiedComponents]
             posList = [component.pos()+self._pasteOffset for component in self._copiedComponents]
             self.addComponentsRequest.emit(typeList, posList)
     
     def removeSelected(self):
-        ids = [item.id for item in self._scene.selectedItems() if isinstance(item, ComponentItem)]
-        print(f"Canvas: emitting remove components request with ids {ids}")
-        self.removeComponentsRequest.emit(ids)
+        componentIds = [item.id for item in self._scene.selectedItems() if isinstance(item, ComponentItem)]
+        self.removeComponentsRequest.emit(componentIds)
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)
@@ -223,24 +223,33 @@ class Canvas(QGraphicsView):
         if event.button() == Qt.LeftButton:
             scenePos = self.mapToScene(event.pos())
             item = self._scene.itemAt(scenePos, self.transform())
-            if isinstance(item, ComponentItem):
-                self._dragging = True
-                self._dragStartPos = scenePos
-                self._createGhosts(components=self._scene.selectedItems())
+            if isinstance(item, PinItem):
+                self._connectionDragging = True
+                self._connectionDragStartPin = item
+                self._createConnectionGhost(self._connectionDragStartPin.scenePos(), scenePos)
+            elif isinstance(item, ComponentItem):
+                self._componentDragging = True
+                self._componentDragStartPos = scenePos
+                components = [component for component in self._scene.selectedItems() if isinstance(component, ComponentItem)]
+                self._createComponentGhosts(components)
     
     def mouseMoveEvent(self, event):
-        if self._dragging and self._dragStartPos:
+        if self._componentDragging:
             currentPos = self.mapToScene(event.pos())
-            delta = currentPos - self._dragStartPos
-            self._dragStartPos = currentPos
+            delta = currentPos - self._componentDragStartPos
+            self._componentDragStartPos = currentPos
             for ghost in self._ghostComponents:
                 ghost.setPos(ghost.pos() + delta)
             event.accept()
+        elif self._connectionDragging:
+            currentPos = self.mapToScene(event.pos())
+            self._updateConnectionGhost(newEnd = currentPos)
         super().mouseMoveEvent(event)
     
     def mouseReleaseEvent(self, event):
-        if self._dragging:
-            delta = self.mapToScene(event.pos()) - self._dragStartPos
+        currentPos = self.mapToScene(event.pos())
+        if self._componentDragging:
+            delta = currentPos - self._componentDragStartPos
             ids = []
             newPosList = []
             for ghost in self._ghostComponents:
@@ -248,10 +257,18 @@ class Canvas(QGraphicsView):
                 newPosList.append(ghost.pos()+delta)
                 self.scene().removeItem(ghost)
             self._ghostComponents.clear()
-            self._dragStartPos = None
-            self._dragging = False
+            self._componentDragStartPos = None
+            self._componentDragging = False
             print(f"Canvas: emitting move components request with ids: {ids} and newPosList {newPosList}")
             self.moveComponentsRequest.emit(ids, newPosList)
+            event.accept()
+        elif self._connectionDragging:
+            item = self._scene.itemAt(currentPos, self.transform())
+            if isinstance(item, PinItem):
+                self.createConnectionRequest.emit((self._connectionDragStartPin.parentItem().id, self._connectionDragStartPin.id), (item.parentItem().id, item.id))
+            self._scene.removeItem(self._connectionGhost)
+            self._connectionDragging = False
+            self._connectionDragStartPin = None
             event.accept()
         super().mouseReleaseEvent(event)
     
@@ -260,12 +277,19 @@ class Canvas(QGraphicsView):
             if item not in exceptionItems:
                 item.setSelected(False)
 
-    def _createGhosts(self, components: List[ComponentItem]):
+    def _createComponentGhosts(self, components: List[ComponentItem]):
         self._ghostComponents = {}
         for component in components:
             ghost = component.ghost()
             self._ghostComponents[ghost] = component
             self._scene.addItem(ghost)
+    
+    def _createConnectionGhost(self, start: QPointF, end: QPointF):
+        self._connectionGhost = ConnectionItem.CubicPath(start = start, end=end).ghost()
+        self._scene.addItem(self._connectionGhost)
+    
+    def _updateConnectionGhost(self, newEnd: QPointF):
+        self._connectionGhost.end = newEnd
     
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():

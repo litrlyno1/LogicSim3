@@ -15,8 +15,8 @@ class CanvasVM(QObject):
     #id
     componentPosUpdated = Signal(str, QPointF)
     #id, pos
-    connectionAdded = Signal(str, str, str)
-    #id, pinId1, pinId2
+    connectionAdded = Signal(str, tuple, tuple)
+    #id, parentPin
     connectionRemoved = Signal(str)
     #id
     componentValueUpdated = Signal(str, bool)
@@ -28,17 +28,11 @@ class CanvasVM(QObject):
         super().__init__()
         self._components : Dict[str, ComponentVM] = dict()
         self._connections : Dict[str, ConnectionVM] = dict()
-        self._inputPins: Dict[str, PinVM] = dict()
-        self._outputPins: Dict[str, PinVM] = dict()
     
     def addComponent(self, component : ComponentVM):
         self._components[component.id] = component
         component.posChanged.connect(lambda id, pos: self.componentPosUpdated.emit(id, pos))
         if isinstance(component, CircuitComponentVM):
-            for pin in component.inputPins.values():
-                self._inputPins[pin.id] = pin
-            for pin in component.outputPins.values():
-                self._outputPins[pin.id] = pin
             component.valueChanged.connect(lambda id, value: self.componentValueUpdated.emit(id, value))
             self.circuitComponentAdded.emit(component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds)
             print(f"CanvasVM : emitting circuit component added signal with {component.id, component.type, component.pos, component.inputPinIds, component.outputPinIds}")
@@ -51,10 +45,6 @@ class CanvasVM(QObject):
         self._components.pop(component.id)
         component.posChanged.disconnect()
         if isinstance(component, CircuitComponentVM):
-            for pin in component.inputPins.values():
-                self._inputPins.pop(pin.id)
-            for pin in component.outputPins.values():
-                self._outputPins.pop(pin.id)
             component.valueChanged.disconnect()
         self.componentRemoved.emit(component.id)
         print(f"CanvasVM : emitting component removed signal with {component.id}")
@@ -64,8 +54,8 @@ class CanvasVM(QObject):
         self._connections[connection.id] = connection
         connection.connect()
         connection.valueChanged.connect(lambda id, value : self.connectionValueUpdated.emit(id, value))
-        self.connectionAdded.emit(connection.id, connection, connection)
-        print(f"CanvasVM : emitting connection added signal with {connection.id, connection.pinId1, connection.pinId2}")
+        self.connectionAdded.emit(connection.id, connection.parentPinIdPair1, connection.parentPinIdPair2)
+        print(f"CanvasVM : emitting connection added signal with {connection.id, connection.parentPinIdPair1, connection.parentPinIdPair2}")
         print(f"Current length of connectionList: {len(self._connections)}")
     
     def removeConnection(self, connection : ConnectionVM):
@@ -83,7 +73,3 @@ class CanvasVM(QObject):
     @property
     def connections(self):
         return self._connections
-    
-    @property
-    def pins(self):
-        return self._inputPins | self._outputPins

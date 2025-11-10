@@ -34,4 +34,5 @@ class CommandManager:
     
     def createCommand(self, commandType : str, **kwargs):
         command = CommandFactory.createCommand(commandType, canvasVM = self._canvasVM, **kwargs)
-        self.do(command)
+        if command.createdSuccessfully:
+            self.do(command)

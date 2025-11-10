@@ -5,11 +5,12 @@ import weakref
 
 class PinVM(PropagatorObject):
     
-    def __init__(self, pin : Pin):
+    def __init__(self, parentId: str, pin : Pin):
+        self._parentId = parentId
         self._pin = pin
         self._id = generateId(prefix = self._pin.type)
         super().__init__(id = self._id, propagator = self._pin)
-    
+
     @property
     def pin(self):
         return self._pin
@@ -21,3 +22,7 @@ class PinVM(PropagatorObject):
     @property
     def id(self):
         return self._id
+    
+    @property
+    def parentId(self):
+        return self._parentId

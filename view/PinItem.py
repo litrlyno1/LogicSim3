@@ -16,11 +16,9 @@ class PinItem(QGraphicsObject):
         parentItem.moved.connect(lambda pos: self.parentMoved.emit(pos))
         parentItem.selected.connect(lambda val: self.setParentSelected(val))
         self._setupGraphics(relativePos)
-        self.setFlags(
-            QGraphicsObject.ItemIsSelectable |
-            QGraphicsObject.ItemSendsGeometryChanges
-        )
+        self.setFlags(QGraphicsObject.ItemIsSelectable)
         self._parentSelected = parentItem.isSelected()
+        print(f"PinItem: parent: {self.parentItem()}, z: {self.zValue()}")
     
     def _importSettings(self, settings : PinItemSettings):
         self._radius = settings.RADIUS
@@ -36,7 +34,7 @@ class PinItem(QGraphicsObject):
         self.setPos(relativePos)
         self._brush = self._color
         self._pen = QPen(self._borderColor, self._borderWidth)
-        self.setZValue(2)
+        self.setZValue(1)
         self.setAcceptHoverEvents(True)
         self.setAcceptedMouseButtons(Qt.LeftButton)
     
@@ -45,7 +43,7 @@ class PinItem(QGraphicsObject):
     
     @property
     def center(self) -> QPointF:
-        return self.sceneBoundingRect().center
+        return self.sceneBoundingRect().center()
     
     @property
     def type(self) -> str:
