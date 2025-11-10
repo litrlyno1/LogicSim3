@@ -8,10 +8,11 @@ class ComponentItem(QGraphicsObject):
     moved = Signal(QPointF)
     selected = Signal(bool)
     
-    def __init__(self, id : str, type : str, pos : str, settings = ComponentItemSettings.default()):
+    def __init__(self, id : str, type : str, pos : str, isGhost: bool = False, settings = ComponentItemSettings.default()):
         super().__init__()
         self._type = type
         self._id = id
+        self._isGhost = isGhost
         self.setFlags(
             QGraphicsItem.ItemIsSelectable |
             QGraphicsItem.ItemSendsGeometryChanges

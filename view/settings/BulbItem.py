@@ -12,6 +12,7 @@ class BulbItemSettings(CircuitComponentItemSettings):
                 color,
                 onColor,
                 selectedColor,
+                draggingColor,
                 borderColor,
                 borderWidth):
         
@@ -23,6 +24,7 @@ class BulbItemSettings(CircuitComponentItemSettings):
         self.SELECTED_COLOR = selectedColor
         self.BORDER_COLOR = borderColor
         self.BORDER_WIDTH = borderWidth
+        self.DRAGGING_COLOR = draggingColor
     
     @classmethod
     def default(cls):
@@ -30,5 +32,6 @@ class BulbItemSettings(CircuitComponentItemSettings):
         settings.SIZE = QSize(40, 40)
         settings.COLOR = QColor(255, 170, 170)
         ON_COLOR = QColor(184, 230, 176)
+        draggingColor = QColor(245, 245, 245)
         return cls(settings.SIZE, settings.FONT_SIZE, settings.TEXT_COLOR, settings.COLOR, ON_COLOR, 
-                    settings.SELECTED_COLOR, settings.BORDER_COLOR, settings.BORDER_WIDTH)
+                    settings.SELECTED_COLOR, draggingColor, settings.BORDER_COLOR, settings.BORDER_WIDTH)

@@ -16,10 +16,13 @@ class BulbItem(CircuitComponentItem):
         super()._importSettings(settings)
         self._settings = settings
         self._onColor = settings.ON_COLOR
+        self._draggingColor = settings.DRAGGING_COLOR
     
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHints(QPainter.Antialiasing)
         painter.setBrush(self._brush)
+        if self._isGhost:
+            painter.setBrush(self._draggingColor)
         painter.setPen(self._pen)
         painter.drawEllipse(self._rect)
         painter.setFont(self._font)
@@ -35,6 +38,7 @@ class BulbItem(CircuitComponentItem):
     
     def ghost(self):
         ghost = self.clone()
+        ghost._isGhost = True
         ghost.setOpacity(0.5)
         ghost.setZValue(self.zValue() + 1)
         return ghost

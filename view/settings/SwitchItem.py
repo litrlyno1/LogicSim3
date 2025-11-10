@@ -12,6 +12,7 @@ class SwitchItemSettings(CircuitComponentItemSettings):
                 color,
                 onColor,
                 selectedColor,
+                draggingColor,
                 borderColor,
                 borderWidth):
         
@@ -21,6 +22,7 @@ class SwitchItemSettings(CircuitComponentItemSettings):
         self.COLOR = color
         self.ON_COLOR = onColor
         self.SELECTED_COLOR = selectedColor
+        self.DRAGGING_COLOR = draggingColor
         self.BORDER_COLOR = borderColor
         self.BORDER_WIDTH = borderWidth
     
@@ -30,5 +32,6 @@ class SwitchItemSettings(CircuitComponentItemSettings):
         settings.SIZE = QSize(50, 50)
         settings.COLOR = QColor(255, 170, 170)
         ON_COLOR = QColor(184, 230, 176)
+        draggingColor = QColor(245, 245, 245)
         return cls(settings.SIZE, settings.FONT_SIZE, settings.TEXT_COLOR, settings.COLOR, ON_COLOR, 
-                    settings.SELECTED_COLOR, settings.BORDER_COLOR, settings.BORDER_WIDTH)
+                    settings.SELECTED_COLOR, draggingColor, settings.BORDER_COLOR, settings.BORDER_WIDTH)
