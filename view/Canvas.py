@@ -177,8 +177,12 @@ class Canvas(QGraphicsView):
             self.addComponentsRequest.emit(typeList, posList)
     
     def removeSelected(self):
+        connectionIds = [item.id for item in self._scene.selectedItems() if isinstance(item, ConnectionItem)]
         componentIds = [item.id for item in self._scene.selectedItems() if isinstance(item, ComponentItem)]
-        self.removeComponentsRequest.emit(componentIds)
+        if connectionIds:
+            self.removeConnectionsRequest.emit(connectionIds)
+        if componentIds:
+            self.removeComponentsRequest.emit(componentIds)
     
     def drawBackground(self, painter: QPainter, rect):
         super().drawBackground(painter, rect)

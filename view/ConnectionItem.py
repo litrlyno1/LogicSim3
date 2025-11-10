@@ -75,6 +75,7 @@ class ConnectionItem(QGraphicsObject):
     
     def __init__(self, id: str, pinItem1: PinItem, pinItem2: PinItem, settings: ConnectionItemSettings = ConnectionItemSettings.default()):
         super().__init__()
+        self._id = id
         self._path = ConnectionItem.CubicPath(pinItem1.center, pinItem2.center, settings)
         self._path.setParentItem(self)
         pinItem1.parentMoved.connect(lambda: self.updateStart(pinItem1.center))
@@ -85,6 +86,10 @@ class ConnectionItem(QGraphicsObject):
         )
         print(self._path.start)
         print(self._path.end)
+    
+    @property
+    def id(self):
+        return self._id
     
     def updateStart(self, pos : QPointF):
         self._path.start = pos
