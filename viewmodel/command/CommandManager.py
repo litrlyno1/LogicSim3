@@ -9,7 +9,6 @@ class CommandManager:
         self.connectCanvasVM(canvasVM)
         self._executedStack = [] #stack of executed commands
         self._undoneStack = [] #stack of undone commands
-        print("Command Manager initialized")
     
     def connectCanvasVM(self, canvasVM : CanvasVM):
         self._canvasVM = canvasVM

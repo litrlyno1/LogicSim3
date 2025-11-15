@@ -40,7 +40,6 @@ class MoveComponents(Command):
         for id in componentIds:
             self._oldPosList.append(self._canvas.components[id].pos)
         self._newPosList = newPosList
-        print(f"Commands: Initialized command MoveComponent with ids {self._componentIds}, oldPosList {self._oldPosList}, newPosList {self._newPosList}")
     
     @property
     def components(self):
@@ -83,7 +82,6 @@ class RemoveComponents(Command):
                     if connection.isConnectedToCircuitComponent(component):
                         adjacentConnections.add(connection)
                 self._adjacentConnections.append(adjacentConnections)
-            print(f"Command RemoveComponents. Adjacent connections {adjacentConnections}")
     
     @property
     def components(self):

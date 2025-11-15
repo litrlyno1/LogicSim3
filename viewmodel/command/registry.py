@@ -11,7 +11,6 @@ class CommandRegistry:
             for name, obj in inspect.getmembers(module, inspect.isclass):
                 if obj.__module__ == module_name:
                     cls._registry[name] = obj
-        print(f"COMMAND REGISTRY: {cls._registry}")
         return cls._registry
 
     @classmethod

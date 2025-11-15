@@ -208,3 +208,8 @@ __marimo__/
 
 #VS-Code extensions
 .pylintrc
+
+#docs
+docs/_build/
+docs/html/
+docs/pdf/
