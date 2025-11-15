@@ -21,6 +21,12 @@ A logic simulator built with **Python 3.12** and **PySide6**, following the **MV
 
 ---
 
+## Documentation
+
+[Open Documentation](docs/html/index.html)
+
+---
+
 ## Requirements
 
 - Python 3.12  
