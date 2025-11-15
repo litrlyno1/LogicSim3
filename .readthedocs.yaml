@@ -1,13 +1,9 @@
-# Read the Docs configuration file
-# Version 2 syntax
 version: 2
 
-# Python environment
 python:
   version: 3.12
   install:
     - requirements: docs/requirements.txt
 
-# Sphinx build
 sphinx:
   configuration: docs/source/conf.py
