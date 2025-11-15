@@ -17,9 +17,12 @@ A logic simulator built with **Python 3.12** and **PySide6**, following the **MV
 
 ## Screenshots
 
+### Interface
 ![Interface](resources/MainWindow.png)
-![Workflow between view and viewmodel](resources/workflow.png)
-![Component Inheritance tree](resources/component_tree.png)
+### Workflow between view and viewmodel
+![Workflow](resources/workflow.png)
+### Model inheritance tree
+![Tree](resources/component_tree.png)
 
 ---
 
