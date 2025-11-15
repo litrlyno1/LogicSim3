@@ -18,9 +18,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))
 
-sys.path.insert(0, os.path.abspath('../../model'))
-sys.path.insert(0, os.path.abspath('../../view'))
-sys.path.insert(0, os.path.abspath('../../viewmodel'))
+sys.path.insert(0, os.path.abspath('../../logicsimulator/model'))
+sys.path.insert(0, os.path.abspath('../../logicsimulator/view'))
+sys.path.insert(0, os.path.abspath('../../logicsimulator/viewmodel'))
 
 extensions = [
     'sphinx.ext.autodoc',
