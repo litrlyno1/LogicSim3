@@ -1,14 +1,13 @@
 # Read the Docs configuration file
-# See https://docs.readthedocs.io/en/stable/config-file/v2.html
-
+# Version 2 syntax
 version: 2
 
-# Build environment
+# Python environment
 python:
   version: 3.12
   install:
     - requirements: docs/requirements.txt
 
-# Sphinx documentation build
+# Sphinx build
 sphinx:
   configuration: docs/source/conf.py
