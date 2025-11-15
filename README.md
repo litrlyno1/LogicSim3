@@ -34,5 +34,5 @@ A logic simulator built with **Python 3.12** and **PySide6**, following the **MV
 2. Install dependencies
 3. Run using   
 '''
-python-m logicsimulator.main   
+python -m logicsimulator.main   
 '''   
