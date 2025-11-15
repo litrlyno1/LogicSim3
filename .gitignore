@@ -206,10 +206,14 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-#VS-Code extensions
+#VS-Code
 .pylintrc
+.vscode
 
 #docs
 docs/_build/
 docs/html/
 docs/pdf/
+
+#DS-Store
+.DS_Store
